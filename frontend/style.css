@@ -1,5 +1,7 @@
 /* Fixed popup size */
 html, body {
+    display: flex;
+    flex-direction: column;
     width: 450px;
     height: 500px;
     margin: 0;
@@ -11,6 +13,25 @@ html, body {
 .squadLockLogo {
     width: 80%;
     align-self: center;
+}
+
+.input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    width: 100%; /* makes the row span full popup width */
+    box-sizing: border-box; /* ensures gap/padding is included in width */
+}
+
+
+
+#siteInput {
+    flex: 1;            /* makes input take all available space */
+}
+
+#addSite {
+    flex: 0;            /* button keeps its natural size */
 }
 
 /* Scrollable blocked sites list */
