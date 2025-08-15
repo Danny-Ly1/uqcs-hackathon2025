@@ -140,7 +140,7 @@ const provideSuggestions = async (e) => {
             suggestionsBox.innerHTML = "";
         });
 
-        suggestionsBox.appendChild(div);
+        suggestionsBox.appendChild(suggestionDiv);
     }
 }
 
