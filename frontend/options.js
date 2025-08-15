@@ -4,10 +4,79 @@ const suggestionsBox = document.getElementById("suggestions");
 
 // Common sites for suggestion
 const commonSites = [
-    "facebook.com", "twitter.com", "instagram.com", "tiktok.com",
-    "reddit.com", "youtube.com", "netflix.com", "discord.com",
-    "pinterest.com", "tumblr.com", "roblox.com", "twitch.tv"
+    // Social Media
+    "facebook.com",
+    "twitter.com",
+    "x.com",            // new Twitter domain
+    "instagram.com",
+    "tiktok.com",
+    "snapchat.com",
+    "pinterest.com",
+    "tumblr.com",
+    "threads.net",
+    "mastodon.social",
+
+    // Video & Streaming
+    "youtube.com",
+    "netflix.com",
+    "twitch.tv",
+    "hulu.com",
+    "disneyplus.com",
+    "primevideo.com",
+    "hbomax.com",
+    "crunchyroll.com",
+    "vimeo.com",
+
+    // News & Clickbait
+    "buzzfeed.com",
+    "huffpost.com",
+    "dailymail.co.uk",
+    "theguardian.com",
+    "nytimes.com",
+    "washingtonpost.com",
+    "cnn.com",
+    "bbc.com",
+
+    // Shopping & Deals
+    "amazon.com",
+    "ebay.com",
+    "etsy.com",
+    "aliexpress.com",
+    "walmart.com",
+    "target.com",
+    "bestbuy.com",
+    "wish.com",
+
+    // Forums & Communities
+    "reddit.com",
+    "quora.com",
+    "stackexchange.com",
+    "4chan.org",
+    "9gag.com",
+    "imgur.com",
+
+    // Gaming
+    "roblox.com",
+    "epicgames.com",
+    "store.steampowered.com",
+    "battle.net",
+    "minecraft.net",
+    "leagueoflegends.com",
+
+    // Messaging
+    "discord.com",
+    "messenger.com",
+    "whatsapp.com",
+    "telegram.org",
+    "signal.org",
+
+    // Misc Time Wasters
+    "boredpanda.com",
+    "theonion.com",
+    "knowyourmeme.com",
+    "popcrush.com"
 ];
+
 
 // Render saved sites in the blocked list
 function renderList(sites) {
