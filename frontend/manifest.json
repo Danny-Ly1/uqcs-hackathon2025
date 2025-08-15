@@ -2,6 +2,8 @@
   "name": "SquadLock",
   "description": "Anti-goon++",
   "version": "1.0",
+  "permissions": ["declarativeNetRequest", "storage"],
+  "host_permissions": ["<all_urls>"],
   "manifest_version": 3,
   "action": {
     "default_popup": "index.html",

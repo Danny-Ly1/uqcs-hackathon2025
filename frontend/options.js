@@ -45,3 +45,19 @@ siteInput.addEventListener('input', () => {
         console.log(results.map(r => new URL(r.url).hostname));
     });
 });
+
+// background.js
+chrome.storage.sync.get(["blockedSites"], ({ blockedSites = [] }) => {
+    chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: [1],
+        addRules: [{
+            id: 1,
+            priority: 1,
+            action: { type: "block" },
+            condition: {
+                urlFilter: blockedSites.map(s => `||${s}`).join("|"),
+                resourceTypes: ["main_frame"]
+            }
+        }]
+    });
+});
