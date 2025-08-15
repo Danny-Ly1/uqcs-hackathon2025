@@ -92,8 +92,6 @@ const commonSites = [
     "popcrush.com"
 ];
 
-// TODO: change to local chrome storage, or else 8kb limit will be imposed
-
 // Render saved sites in the blocked list
 const renderList = async () => {
     siteList.innerHTML = "";
