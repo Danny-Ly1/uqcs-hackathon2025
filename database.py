@@ -6,7 +6,7 @@ USER = 'postgres'
 PASSWORD = '1234'
 PORT = '5432'
 
-GROUP_ID_INDEX 3
+GROUP_ID_INDEX=3
 
 """
 Creates connection to database
@@ -24,7 +24,7 @@ def connect_database():
 """
 Adds a new url into the blocklist
 """
-def add_blocked_url(user_id: Optional[int], link: Optional[str]): # Make not optional later
+def add_blocked_url(user_id: int, link: str):
     with connect_database() as conn:
 
         cur = conn.cursor()
@@ -73,16 +73,12 @@ access_database()
 def update_score():
     pass
 
-def add_url():
-    pass
-
-
 def check_url():
     pass
 
 
 def updateGroupID(user_id: int, group_id: int):
-    with connect_to_db() as conn:
+    with connect_to_database() as conn:
         with conn.cursor() as cursor:
             cursor.execute("""UPDATE Users SET groupID = %s WHERE userID = %s""", (group_id, user_id))
             conn.commit()
