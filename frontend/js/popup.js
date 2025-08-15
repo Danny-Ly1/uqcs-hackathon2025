@@ -106,12 +106,6 @@ function renderList(sites) {
     });
 }
 
-
-// Load saved sites
-chrome.storage.sync.get(["blockedSites"], (result) => {
-    renderList(result.blockedSites || []);
-});
-
 // Show suggestions as you type
 siteInput.addEventListener("input", () => {
     const query = siteInput.value.toLowerCase();
@@ -145,6 +139,8 @@ document.getElementById("addSite").addEventListener("click", () => {
                 renderList(sites);
                 siteInput.value = "";
                 suggestionsBox.innerHTML = "";
+
+                chrome.storage.sync.get(["blockedSites"], (store) => updateChromeBlocklist(store.blockedSites));
             });
         }
     });
@@ -178,7 +174,10 @@ const updateChromeBlocklist = async (blockList) => {
     });
 }
 
-// TODO: the blocklist only updates each time you click on the extension
+// Mainline
 (async () => {
-    await updateChromeBlocklist(['youtube.com', 'twitch.tv'])
+    // Render saved sites, and load them into Chrome ruleset
+    const store = await chrome.storage.sync.get("blockedSites");
+    renderList(store.blockedSites);
+    updateChromeBlocklist(store.blockedSites);
 })();
