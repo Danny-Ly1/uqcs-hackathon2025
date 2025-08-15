@@ -6,7 +6,9 @@ const storageCache = {};
 // Returns a promise until the storageCache is initialised
 const initStorageCache = chrome.storage.local.get().then((items) => {
     // Initialise the storageCache if the required key doesn't exist
-    if (!initStorageCache.blockedSites) {
+    if (!items.blockedSites) {
+        console.log('Extension local storage uninitialised, initialising...');
+
         storageCache.blockedSites = [];
         chrome.storage.local.set(storageCache);
 
@@ -149,9 +151,6 @@ const handleAddSiteBtnClick = async (e) => {
     // Ensure we're not dealing trying to add plain whitespace
     const site = siteInputTextbox.value.trim();
     if (!site) return;
-
-    // Wait for storage cache to be populated
-    await initStorageCache;
 
     // Only add site when the site isn't in our existing list
     if (!storageCache.blockedSites.includes(site)) {
