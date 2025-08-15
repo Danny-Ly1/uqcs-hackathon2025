@@ -1,8 +1,15 @@
-const siteInput = document.getElementById("siteInput");
+const siteInputTextbox = document.getElementById("siteInput");
 const siteList = document.getElementById("siteList");
 const suggestionsBox = document.getElementById("suggestions");
 
+const storageCache = {};
+// Returns a promise until the storageCache is initialised
+const initStorageCache = chrome.storage.sync.get().then((items) => {
+  Object.assign(storageCache, items);
+});
+
 // Common sites for suggestion
+// Should all be lowercase for comparison against user input
 const commonSites = [
     // Social Media
     "facebook.com",
@@ -77,11 +84,12 @@ const commonSites = [
     "popcrush.com"
 ];
 
+// TODO: change to local chrome storage, or else 8kb limit will be imposed
 
 // Render saved sites in the blocked list
-function renderList(sites) {
+const renderList = async () => {
     siteList.innerHTML = "";
-    sites.forEach(site => {
+    storageCache.blockedSites.forEach(site => {
         const li = document.createElement("li");
 
         const textSpan = document.createElement("span");
@@ -91,13 +99,11 @@ function renderList(sites) {
         const removeBtn = document.createElement("button");
         removeBtn.textContent = "✖";
         removeBtn.style.cursor = "pointer";
-        removeBtn.addEventListener("click", () => {
-            chrome.storage.sync.get(["blockedSites"], (result) => {
-                let updatedSites = (result.blockedSites || []).filter(s => s !== site);
-                chrome.storage.sync.set({ blockedSites: updatedSites }, () => {
-                    renderList(updatedSites);
-                });
-            });
+        removeBtn.addEventListener("click", async (e) => {
+            // Implement remove button logic
+            storageCache.blockedSites = storageCache.blockedSites.filter(s => s !== site);
+            await chrome.storage.sync.set(storageCache);
+            renderList();
         });
 
         li.appendChild(textSpan);
@@ -106,63 +112,81 @@ function renderList(sites) {
     });
 }
 
-// Show suggestions as you type
-siteInput.addEventListener("input", () => {
-    const query = siteInput.value.toLowerCase();
+// Handle siteInputTextbox input events to show suggestions as you type
+const provideSuggestions = async (e) => {
+    // Clear suggestion box of previous input
     suggestionsBox.innerHTML = "";
 
+    // Clean up user input
+    const query = siteInputTextbox.value.trim().toLowerCase();
     if (!query) return;
 
-    const filtered = commonSites.filter(site => site.toLowerCase().includes(query));
-    filtered.forEach(site => {
-        const div = document.createElement("div");
-        div.className = "suggestion-item";
-        div.textContent = site;
-        div.addEventListener("click", () => {
-            siteInput.value = site;
+    const siteSuggestions = commonSites.filter(site => site.toLowerCase().includes(query));
+    for (const suggestion of siteSuggestions) {
+        // Populate suggestionsBox with filtered suggestions
+        const suggestionDiv = document.createElement("div");
+        suggestionDiv.className = "suggestion-item";
+        suggestionDiv.textContent = suggestion;
+        suggestionDiv.addEventListener("click", () => {
+            siteInputTextbox.value = suggestion;
             suggestionsBox.innerHTML = "";
         });
+
         suggestionsBox.appendChild(div);
-    });
-});
+    }
+}
+
+siteInputTextbox.addEventListener("input", provideSuggestions);
 
 // Add site button logic
-document.getElementById("addSite").addEventListener("click", () => {
-    const site = siteInput.value.trim();
+const handleAddSiteBtnClick = async (e) => {
+    // Ensure we're not dealing trying to add plain whitespace
+    const site = siteInputTextbox.value.trim();
     if (!site) return;
 
-    chrome.storage.sync.get(["blockedSites"], (result) => {
-        let sites = result.blockedSites || [];
-        if (!sites.includes(site)) {
-            sites.push(site);
-            chrome.storage.sync.set({ blockedSites: sites }, () => {
-                renderList(sites);
-                siteInput.value = "";
-                suggestionsBox.innerHTML = "";
+    // Wait for storage cache to be populated
+    await initStorageCache;
 
-                chrome.storage.sync.get(["blockedSites"], (store) => updateChromeBlocklist(store.blockedSites));
-            });
-        }
-    });
-});
+    // Only add site when the site isn't in our existing list
+    if (!storageCache.blockedSites.includes(site)) {
+        storageCache.blockedSites.push(site);
+    } else {
+        // Cleanup
+        siteInputTextbox.value = "";
+        suggestionsBox.innerHTML = "";
 
-// blockList should be a string array containing domain names to block
-const updateChromeBlocklist = async (blockList) => {
+        return;
+    }
+
+    await chrome.storage.sync.set(storageCache);
+
+    // Update shown list and ruleset
+    await Promise.all([renderList(), updateChromeBlocklist()]);
+
+    // Cleanup user input
+    siteInputTextbox.value = "";
+    suggestionsBox.innerHTML = "";
+}
+
+document.getElementById("addSite").addEventListener("click", handleAddSiteBtnClick);
+
+// Populates Chrome blacklist with list from storage cache
+const updateChromeBlocklist = async () => {
     // Find all old rule IDs so we can clear them
     const oldRules = await chrome.declarativeNetRequest.getDynamicRules();
     const oldRuleIds = oldRules.map((rule) => rule.id);
 
     const ruleSet = [];
-    for(let i = 0; i < blockList.length; i++) {
+    for(let i = 0; i < storageCache.blockedSites.length; i++) {
         ruleSet.push({
             id: i + 1, // Ruleset ID cannot equal 0
             priority: 1,
             action: {
               type: "redirect",
-              redirect: { extensionPath: `/blocked.html?host=${blockList[i]}` },
+              redirect: { extensionPath: `/blocked.html?host=${storageCache.blockedSites[i]}` },
             },
             condition: {
-              urlFilter: `||${blockList[i]}/`,
+              urlFilter: `||${storageCache.blockedSites[i]}/`,
               resourceTypes: ["main_frame"],
             },
         });
@@ -177,7 +201,7 @@ const updateChromeBlocklist = async (blockList) => {
 // Mainline
 (async () => {
     // Render saved sites, and load them into Chrome ruleset
-    const store = await chrome.storage.sync.get("blockedSites");
-    renderList(store.blockedSites);
-    updateChromeBlocklist(store.blockedSites);
+    await initStorageCache;
+    renderList();
+    updateChromeBlocklist();
 })();
