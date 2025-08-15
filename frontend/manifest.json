@@ -14,5 +14,11 @@
   ],
   "host_permissions": [
     "*://*/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [ "blocked.html" ],
+      "matches": [ "*://*/*" ]
+    }
   ]
 }
