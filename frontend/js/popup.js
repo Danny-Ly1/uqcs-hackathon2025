@@ -4,7 +4,7 @@ const suggestionsBox = document.getElementById("suggestions");
 
 const storageCache = {};
 // Returns a promise until the storageCache is initialised
-const initStorageCache = chrome.storage.sync.get().then((items) => {
+const initStorageCache = chrome.storage.local.get().then((items) => {
   Object.assign(storageCache, items);
 });
 
@@ -102,7 +102,7 @@ const renderList = async () => {
         removeBtn.addEventListener("click", async (e) => {
             // Implement remove button logic
             storageCache.blockedSites = storageCache.blockedSites.filter(s => s !== site);
-            await chrome.storage.sync.set(storageCache);
+            await chrome.storage.local.set(storageCache);
             renderList();
         });
 
@@ -158,7 +158,7 @@ const handleAddSiteBtnClick = async (e) => {
         return;
     }
 
-    await chrome.storage.sync.set(storageCache);
+    await chrome.storage.local.set(storageCache);
 
     // Update shown list and ruleset
     await Promise.all([renderList(), updateChromeBlocklist()]);
