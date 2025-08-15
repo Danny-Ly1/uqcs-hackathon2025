@@ -41,6 +41,23 @@ def url_trimmer(url: str) -> str:
     return url
 
 """
+Add new blocked url
+"""
+def add_blocked_url(user_id: Optional[int], url: Optional[str]): # Make not optional later
+    with connect_database() as conn:
+        cur = conn.cursor()
+        cur.execute("""SELECT groupid FROM users WHERE userid = %s""", (user_id, ))
+        group_id = cur.fetchall()[0] # extract value  
+        
+        url = url_trimmer(url)
+        cur.execute("""UPDATE groups SET links = ARRAY_APPEND(links, %s) WHERE groupid = %s""", (url, group_id))
+        cur.execute("""UPDATE groups SET links = (SELECT array_agg(DISTINCT l ORDER BY l) FROM unnest(links) as l)            
+        """) # remove duplicates each pass. Case sensitive, typo sensitive
+        conn.commit()
+
+    conn.close()
+
+"""
 Clears array of blocked urls
 """
 def clear_url_all(user_id: int):
@@ -75,28 +92,95 @@ def check_url(user_id, url: str):
     conn.close()
 
 """
-Add new blocked url
+Reduces score of user
 """
-def add_blocked_url(user_id: Optional[int], url: Optional[str]): # Make not optional later
+def reduce_score(user_id: int):
+    REDUCTION_AMOUNT = 10
     with connect_database() as conn:
-        cur = conn.cursor()
-        cur.execute("""SELECT groupid FROM users WHERE userid = %s""", (user_id, ))
-        group_id = cur.fetchall()[0] # extract value  
-        
-        url = url_trimmer(url)
-        cur.execute("""UPDATE groups SET links = ARRAY_APPEND(links, %s) WHERE groupid = %s""", (url, group_id))
-        cur.execute("""UPDATE groups SET links = (SELECT array_agg(DISTINCT l ORDER BY l) FROM unnest(links) as l)            
-        """) # remove duplicates each pass. Case sensitive, typo sensitive
-        conn.commit()
 
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE users SET score = score - %s WHERE userid = %s""", (REDUCTION_AMOUNT, user_id))
+        
+    conn.commit()
     conn.close()
 
+"""
+Sets new score for user
+"""
+def set_score(user_id: int, score: int):
+    with connect_database() as conn:
 
-def update_score():
-    pass
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE users SET score = %s WHERE userid = %s""", (score, user_id))
+        
+    conn.commit()
+    conn.close()
 
 def updateGroupID(user_id: int, group_id: int):
     with connect_to_database() as conn:
         with conn.cursor() as cursor:
             cursor.execute("""UPDATE Users SET groupID = %s WHERE userID = %s""", (group_id, user_id))
             conn.commit()
+
+# Table setup functions
+"""
+Creates new tables required
+"""
+def init_database():
+    with connect_database() as conn:
+
+        cur = conn.cursor()
+        cur.execute("""
+                    CREATE TABLE IF NOT EXISTS users (
+                    userid SERIAL PRIMARY KEY,
+                    groupid INT,
+                    name VARCHAR(50) UNIQUE,
+                    points INT DEFAULT 100
+                    )
+                    """)
+        cur.execute("""
+                    CREATE TABLE IF NOT EXISTS groups (
+                    groupid SERIAL PRIMARY KEY,
+                    links TEXT[])
+                    """)
+
+    conn.commit()
+    conn.close()
+
+def drop_database():
+    with connect_database() as conn:
+
+        cur = conn.cursor()
+        cur.execute("""
+                    DROP TABLE users;
+                    DROP TABLE groups;
+                    """)
+        
+    conn.commit()
+    conn.close()
+
+def add_user(name: str):
+    with connect_database() as conn:
+
+        cur = conn.cursor()
+        cur.execute("""
+                    INSERT INTO users (name)
+                    VALUES (%s)
+                    """, (name, ))
+        
+    conn.commit()
+    conn.close()
+
+def add_group():
+    with connect_database() as conn:
+
+        cur = conn.cursor()
+        cur.execute("""
+                    INSERT INTO groups (links)
+                    VALUES (%s)
+                    """, ([], ))
+        
+    conn.commit()
+    conn.close()
