@@ -67,3 +67,22 @@ def access_database():
     print(results)
 
 access_database()
+
+
+
+def update_score():
+    pass
+
+def add_url():
+    pass
+
+
+def check_url():
+    pass
+
+
+def updateGroupID(user_id: int, group_id: int):
+    with connect_to_db() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""UPDATE Users SET groupID = %s WHERE userID = %s""", (group_id, user_id))
+            conn.commit()
