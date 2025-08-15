@@ -5,7 +5,15 @@ const suggestionsBox = document.getElementById("suggestions");
 const storageCache = {};
 // Returns a promise until the storageCache is initialised
 const initStorageCache = chrome.storage.local.get().then((items) => {
-  Object.assign(storageCache, items);
+    // Initialise the storageCache if the required key doesn't exist
+    if (!initStorageCache.blockedSites) {
+        storageCache.blockedSites = [];
+        chrome.storage.local.set(storageCache);
+
+        return;
+    }
+
+    Object.assign(storageCache, items);
 });
 
 // Common sites for suggestion
