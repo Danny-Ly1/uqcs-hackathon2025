@@ -37,3 +37,11 @@ document.getElementById('addSite').addEventListener('click', () => {
         }
     });
 });
+
+siteInput.addEventListener('input', () => {
+    const query = siteInput.value;
+    chrome.history.search({ text: query, maxResults: 5 }, (results) => {
+        // Display suggestions in a dropdown
+        console.log(results.map(r => new URL(r.url).hostname));
+    });
+});
