@@ -22,52 +22,34 @@ def connect_database():
     return conn
 
 """
-Adds a new url into the blocklist
+Clears array of blocked urls
 """
-def add_blocked_url(user_id: int, link: str):
+def clear_url_all(user_id: int):
     with connect_database() as conn:
-
         cur = conn.cursor()
-        cur.execute("""
-        SELECT * FROM groups
-        """)
-        groups = cur.fetchall() # Records result
-
-        cur.execute("""
-        SELECT * FROM users
-        """)
-        user_data = cur.fetchall()
-
-        group_id = -1
-        for i in user_data:
-            if i[0] == user_id:
-                group_id = i[GROUP_ID_INDEX]
-                break       
+        cur.execute("""SELECT groupID FROM users WHERE userID = %s""", (user_id, ))
+        group_id = cur.fetchall()[0]
         
-        cur.execute("""UPDATE groups SET links = ARRAY_APPEND(links, %s) 
-        WHERE groupid = %s""", (link, group_id)) # Append url to record
+        cur.execute("""UPDATE groups SET links = %s WHERE groupid = %s""", ([], group_id)) # Clear tuple
         conn.commit()
 
     conn.close()
 
+"""
+Add new blocked url
+"""
+def add_blocked_url(user_id: Optional[int], link: Optional[str]): # Make not optional later
+    with connect_database() as conn:
+        cur = conn.cursor()
+        cur.execute("""SELECT groupid FROM users WHERE userid = %s""", (user_id, ))
+        group_id = cur.fetchall()[0] # extract value  
+        
+        cur.execute("""UPDATE groups SET links = ARRAY_APPEND(links, %s) WHERE groupid = %s""", (link, group_id))
+        cur.execute("""UPDATE groups SET links = (SELECT array_agg(DISTINCT l ORDER BY l) FROM unnest(links) as l)            
+        """) # remove duplicates each pass. Case sensitive, typo sensitive
+        conn.commit()
 
-def access_database():
-    conn = psycopg2.connect(
-        host=DATA_HOST,
-        database=DATABASE,
-        user=USER,
-        password=PASSWORD,
-        port=PORT
-    )
-    
-    cur = conn.cursor()
-    # Insert SQL between the """
-    cur.execute("""SELECT * FROM Groups""")
-    results = cur.fetchall() # Fetches all output from above query
-    print(results)
-
-access_database()
-
+    conn.close()
 
 
 def update_score():
@@ -75,7 +57,6 @@ def update_score():
 
 def check_url():
     pass
-
 
 def updateGroupID(user_id: int, group_id: int):
     with connect_to_database() as conn:
