@@ -1,11 +1,16 @@
 /* Fixed popup size */
 html, body {
-    width: 250px;
-    height: 300px;
+    width: 450px;
+    height: 500px;
     margin: 0;
     padding: 10px;
     box-sizing: border-box;
     font-family: sans-serif;
+}
+
+.squadLockLogo {
+    width: 80%;
+    align-self: center;
 }
 
 /* Scrollable blocked sites list */
