@@ -149,3 +149,36 @@ document.getElementById("addSite").addEventListener("click", () => {
         }
     });
 });
+
+// blockList should be a string array containing domain names to block
+const updateChromeBlocklist = async (blockList) => {
+    // Find all old rule IDs so we can clear them
+    const oldRules = await chrome.declarativeNetRequest.getDynamicRules();
+    const oldRuleIds = oldRules.map((rule) => rule.id);
+
+    const ruleSet = [];
+    for(let i = 0; i < blockList.length; i++) {
+        ruleSet.push({
+            id: i + 1, // Ruleset ID cannot equal 0
+            priority: 1,
+            action: {
+              type: "redirect",
+              redirect: { extensionPath: `/blocked.html?host=${blockList[i]}` },
+            },
+            condition: {
+              urlFilter: `||${blockList[i]}/`,
+              resourceTypes: ["main_frame"],
+            },
+        });
+    }
+
+    await chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: oldRuleIds,
+        addRules: ruleSet,
+    });
+}
+
+// TODO: the blocklist only updates each time you click on the extension
+(async () => {
+    await updateChromeBlocklist(['youtube.com', 'twitch.tv'])
+})();
