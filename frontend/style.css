@@ -13,7 +13,7 @@ body {
 .squadLockLogo {
     width: 80%;
     align-self: center;
-    align-items: center;
+    text-align: center;
 }
 
 .input-row {
@@ -53,7 +53,7 @@ body {
 }
 
 .suggestions-box {
-    border: 1px solid #ccc;
+    position: absolute;
     background: white;
     max-height: 150px;
     overflow-y: auto;
