@@ -6,6 +6,8 @@ USER = 'postgres'
 PASSWORD = '1234'
 PORT = '5432'
 
+GROUP_ID_INDEX 3
+
 """
 Creates connection to database
 """
