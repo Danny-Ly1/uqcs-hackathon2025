@@ -8,6 +8,7 @@ body {
     padding: 10px;
     box-sizing: border-box;
     font-family: sans-serif;
+    background-image: url(backgroundmaybe.jpg);
 }
 
 .squadLockLogo {
