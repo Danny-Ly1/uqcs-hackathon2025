@@ -1,5 +1,5 @@
 /* Fixed popup size */
-html, body {
+body {
     display: flex;
     flex-direction: column;
     width: 450px;
@@ -13,6 +13,7 @@ html, body {
 .squadLockLogo {
     width: 80%;
     align-self: center;
+    align-items: center;
 }
 
 .input-row {
@@ -23,8 +24,6 @@ html, body {
     width: 100%; /* makes the row span full popup width */
     box-sizing: border-box; /* ensures gap/padding is included in width */
 }
-
-
 
 #siteInput {
     flex: 1;            /* makes input take all available space */
@@ -58,7 +57,6 @@ html, body {
     background: white;
     max-height: 150px;
     overflow-y: auto;
-    position: absolute;
     width: 200px;
     z-index: 10;
 }
