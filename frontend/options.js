@@ -1,28 +1,70 @@
-const siteInput = document.getElementById('siteInput');
-const siteList = document.getElementById('siteList');
+const siteInput = document.getElementById("siteInput");
+const siteList = document.getElementById("siteList");
+const suggestionsBox = document.getElementById("suggestions");
 
-// Save list
-chrome.storage.sync.set({ blockedSites: ["facebook.com", "twitter.com"] });
+// Common sites for suggestion
+const commonSites = [
+    "facebook.com", "twitter.com", "instagram.com", "tiktok.com",
+    "reddit.com", "youtube.com", "netflix.com", "discord.com",
+    "pinterest.com", "tumblr.com", "roblox.com", "twitch.tv"
+];
 
-// Get list
-chrome.storage.sync.get(["blockedSites"], (result) => {
-    console.log(result.blockedSites || []);
-});
-
+// Render saved sites in the blocked list
 function renderList(sites) {
-    siteList.innerHTML = '';
+    siteList.innerHTML = "";
     sites.forEach(site => {
-        let li = document.createElement('li');
-        li.textContent = site;
+        const li = document.createElement("li");
+
+        const textSpan = document.createElement("span");
+        textSpan.textContent = site;
+        textSpan.style.marginRight = "10px";
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "✖";
+        removeBtn.style.cursor = "pointer";
+        removeBtn.addEventListener("click", () => {
+            chrome.storage.sync.get(["blockedSites"], (result) => {
+                let updatedSites = (result.blockedSites || []).filter(s => s !== site);
+                chrome.storage.sync.set({ blockedSites: updatedSites }, () => {
+                    renderList(updatedSites);
+                });
+            });
+        });
+
+        li.appendChild(textSpan);
+        li.appendChild(removeBtn);
         siteList.appendChild(li);
     });
 }
 
+
+// Load saved sites
 chrome.storage.sync.get(["blockedSites"], (result) => {
     renderList(result.blockedSites || []);
 });
 
-document.getElementById('addSite').addEventListener('click', () => {
+// Show suggestions as you type
+siteInput.addEventListener("input", () => {
+    const query = siteInput.value.toLowerCase();
+    suggestionsBox.innerHTML = "";
+
+    if (!query) return;
+
+    const filtered = commonSites.filter(site => site.toLowerCase().includes(query));
+    filtered.forEach(site => {
+        const div = document.createElement("div");
+        div.className = "suggestion-item";
+        div.textContent = site;
+        div.addEventListener("click", () => {
+            siteInput.value = site;
+            suggestionsBox.innerHTML = "";
+        });
+        suggestionsBox.appendChild(div);
+    });
+});
+
+// Add site button logic
+document.getElementById("addSite").addEventListener("click", () => {
     const site = siteInput.value.trim();
     if (!site) return;
 
@@ -32,32 +74,9 @@ document.getElementById('addSite').addEventListener('click', () => {
             sites.push(site);
             chrome.storage.sync.set({ blockedSites: sites }, () => {
                 renderList(sites);
-                siteInput.value = '';
+                siteInput.value = "";
+                suggestionsBox.innerHTML = "";
             });
         }
-    });
-});
-
-siteInput.addEventListener('input', () => {
-    const query = siteInput.value;
-    chrome.history.search({ text: query, maxResults: 5 }, (results) => {
-        // Display suggestions in a dropdown
-        console.log(results.map(r => new URL(r.url).hostname));
-    });
-});
-
-// background.js
-chrome.storage.sync.get(["blockedSites"], ({ blockedSites = [] }) => {
-    chrome.declarativeNetRequest.updateDynamicRules({
-        removeRuleIds: [1],
-        addRules: [{
-            id: 1,
-            priority: 1,
-            action: { type: "block" },
-            condition: {
-                urlFilter: blockedSites.map(s => `||${s}`).join("|"),
-                resourceTypes: ["main_frame"]
-            }
-        }]
     });
 });
