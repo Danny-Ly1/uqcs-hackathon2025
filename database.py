@@ -136,7 +136,8 @@ def init_database():
                     CREATE TABLE IF NOT EXISTS users (
                     userid SERIAL PRIMARY KEY,
                     groupid INT,
-                    name VARCHAR(50) UNIQUE,
+                    username VARCHAR(25) UNIQUE,
+                    password VARCHAR(50),
                     points INT DEFAULT 100
                     )
                     """)
