@@ -8,5 +8,12 @@
   "action": {
     "default_popup": "index.html",
     "default_icon": "extension-logo.png"
-  }
+  },
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ]
 }
