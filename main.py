@@ -171,14 +171,14 @@ def send_webhook(user: str, hook: str, infraction: int):
         embed = DiscordEmbed(title="Blocked Site Access Attempt",
         description= f"{user} went on a blocked website and lost 10 points. LOCK IN!",
         color="FF0000") 
-        embed.image("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmedia.tenor.com%2FDa_Q9QXAUzUAAAAi%2F" \
+        embed.set_image("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmedia.tenor.com%2FDa_Q9QXAUzUAAAAi%2F" \
                 "angry-fist-emoticon-emoticon.gif&f=1&nofb=1&ipt=a71db1e90a5d" \
                 "e3001eea382f517141c1ec8b1e629de42ec7673aea5d76d41549")
     if infraction == 2:
         embed = DiscordEmbed(title="Blocked Site Access Attempt",
         description= f"{user} quit early and lost 50 points. Next time, LOCK IN!",
         color="FFFFFF") 
-        embed.image("https://external-content.duckduckgo.com/iu/?u=" \
+        embed.set_image("https://external-content.duckduckgo.com/iu/?u=" \
         "https%3A%2F%2Fi.imgflip.com%2F740194.png&f=1&nofb=1&ipt=6" \
         "270529088328ceb3d3f9d2fd94a97ceb4ada92d2e86e584241c0d8352c6e9fe")
     webhook.add_embed(embed)
