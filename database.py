@@ -21,6 +21,7 @@ def connect_database():
     )
     return conn
 
+
 """
 Trims url down to domain name. Supports com, org, net
 """
@@ -43,7 +44,7 @@ def url_trimmer(url: str) -> str:
 """
 Add new blocked url
 """
-def add_blocked_url(user_id: Optional[int], url: Optional[str]): # Make not optional later
+def add_blocked_url(user_id: int, url: str):
     with connect_database() as conn:
         cur = conn.cursor()
         cur.execute("""SELECT groupid FROM users WHERE userid = %s""", (user_id, ))
@@ -118,8 +119,11 @@ def set_score(user_id: int, score: int):
     conn.commit()
     conn.close()
 
+"""
+Updates the groupID for the user
+"""
 def updateGroupID(user_id: int, group_id: int):
-    with connect_to_database() as conn:
+    with connect_database() as conn:
         with conn.cursor() as cursor:
             cursor.execute("""UPDATE Users SET groupID = %s WHERE userID = %s""", (group_id, user_id))
             conn.commit()
@@ -136,8 +140,7 @@ def init_database():
                     CREATE TABLE IF NOT EXISTS users (
                     userid SERIAL PRIMARY KEY,
                     groupid INT,
-                    username VARCHAR(25) UNIQUE,
-                    password VARCHAR(50),
+                    name VARCHAR(50) UNIQUE,
                     points INT DEFAULT 100
                     )
                     """)
@@ -162,17 +165,39 @@ def drop_database():
     conn.commit()
     conn.close()
 
-def add_user(name: str):
+"""
+Adds a user to the database
+"""
+def add_user(username: str, password: str) -> int:
     with connect_database() as conn:
-
         cur = conn.cursor()
         cur.execute("""
-                    INSERT INTO users (name)
-                    VALUES (%s)
-                    """, (name, ))
-        
-    conn.commit()
-    conn.close()
+                    INSERT INTO users (username, password)
+                    VALUES (%s, %s) RETURNING userid, username
+                    """, (username, password))
+        user_info = cur.fetchone()
+        return user_info
+
+
+def get_user(userid: int):
+    with connect_database() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""SELECT userid, username, groupid FROM users WHERE userid = %s""", (userid,))
+            user_info = cursor.fetchone()
+            if user_info == None:
+                return "ERROR"
+            return user_info
+
+def check_login(username: str, password: str):
+    with connect_database() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""(SELECT userid, username FROM users WHERE username = %s AND password = %s)
+                           """, (username, password))
+            result = cursor.fetchone()
+            if result == None:
+                return False
+            return result
+
 
 def add_group():
     with connect_database() as conn:
@@ -185,3 +210,12 @@ def add_group():
         
     conn.commit()
     conn.close()
+
+
+
+# Helper function to check db
+def get_all():
+    with connect_database() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""SELECT * FROM Groups""")
+            return cursor.fetchall()
