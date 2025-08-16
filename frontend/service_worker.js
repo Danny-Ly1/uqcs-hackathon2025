@@ -9,6 +9,8 @@
 import { SW_MESSAGE_TYPES, WS_ENDPOINT } from "./js/lib/constants.js";
 import * as store from './js/lib/store.js';
 
+chrome.runtime.onStartup.addListener(() => 42 + 42);
+
 chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
     if(message.type === undefined) {
         return;
