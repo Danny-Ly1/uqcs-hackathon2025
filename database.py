@@ -91,7 +91,9 @@ def url_trimmer(url: str) -> str:
         url = url[www_index:org_index]
     elif net_index:
         url = url[www_index:net_index]
-
+    else: 
+      return ""
+      
     return url
 
 """
@@ -100,6 +102,8 @@ Add new blocked url
 def add_blocked_url(user_id: int, url: str):
     group_id = execute_command(GET_GROUP_ID, (user_id, ), True)
     trimmed = url_trimmer(url)
+    if not trimmed:
+      print("URL not supported, abandoning addition")
     execute_command(APPEND_URL, (trimmed, group_id), False)
     execute_command(FILTER_DUP_URL, (trimmed, group_id), False)
 
@@ -116,6 +120,8 @@ Check if url is in blocklist
 """
 def check_url(user_id, url: str):
     trimmed = url_trimmer(url) 
+    if not trimmed:
+      print("URL not supported, abandoning check")
     group_id = execute_command(GET_GROUP_ID, (user_id, ), True)
     valid_url = execute_command(CHECK_VALID_URL, (trimmed, group_id), True)
     if valid_url:
