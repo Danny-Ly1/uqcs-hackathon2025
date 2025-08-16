@@ -1,3 +1,4 @@
+import { SW_MESSAGE_TYPES } from './lib/constants.js';
 import * as store from './lib/store.js';
 
 const siteInputTextbox = document.getElementById("siteInput");
@@ -9,8 +10,6 @@ const filterButton = document.getElementById("filterButton");
 const returnButton = document.getElementById("returnButton");
 const loginButton = document.getElementById("loginButton");
 const newUserButton = document.getElementById("newUserButton");
-
-let lockInUpdateInterval = null;
 
 // Common sites for suggestion
 // Should all be lowercase for comparison against user input
@@ -115,7 +114,7 @@ const render = async () => {
     });
 
     // Render button state
-    const lockInState = store.getLockedInState();
+    const lockInState = await store.getLockedInState();
     powerButtonImg.src = lockInState.lockedIn ?
         "assets/Powerbutton-Green.png" : "assets/Powerbutton-Red.png";
 }
@@ -175,11 +174,6 @@ const handlePowerBtnClick = async () => {
     // Lock-in for 5 seconds
     await store.lockIn(5);
     await render();
-
-    lockInUpdateInterval = setInterval(async () => {
-        console.log(store.getLockedInState());
-        (await store.updateLockInState()) ? (() => {render(); clearInterval(lockInUpdateInterval)})() : null;
-    }, 577);
 }
 
 function handleFilterButton() {
@@ -238,13 +232,23 @@ const updateChromeBlocklist = async () => {
 
 // Mainline
 (async () => {
-    await store.waitForBrowserStoreInit();
-
-    await store.updateLockInState();
-
     // Render page elements and update Chrome ruleset
     render();
     updateChromeBlocklist();
 
     document.getElementById('userDetailsContainer').classList.remove("hidden");
 })();
+
+chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
+    if(message.type === undefined) {
+        return;
+    }
+
+    switch(message.type) {
+        case SW_MESSAGE_TYPES.CS_STORE_CHANGED:
+            render();
+            break;
+        default:
+            throw new Error('unknown msg type')
+    }
+});

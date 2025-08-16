@@ -7,10 +7,15 @@
     "default_popup": "popup.html",
     "default_icon": "assets/icon-green.png"
   },
+  "background": {
+    "type": "module",
+    "service_worker": "service_worker.js"
+  },
   "permissions": [
     "declarativeNetRequest",
     "declarativeNetRequestFeedback",
-    "storage"
+    "storage",
+    "alarms"
   ],
   "host_permissions": [
     "*://*/*"
