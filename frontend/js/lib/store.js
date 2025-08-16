@@ -269,19 +269,36 @@ export const lockIn = async (lockInDurationSec) => {
     return false;
 }
 
-// Checks the current time, and compares it with the lock-in time
+// Checks the current time, and compares it with the lock-in time and updates the state accordingly
+// Also, configures the appropriate extension icon
 // Returns true, when current time is beyond unlock time
-// TODO: come up with better method to do unlock when time is up
 export const updateLockInState = async () => {
     await refreshCache();
 
     const epochSec = Date.now() / 1000;
     if ((cache.lockInState.unlockTimeEpoch - epochSec) <= 0) {
+        await chrome.action.setIcon({
+            path: {
+                "16": "assets/icon/red/16.png",
+                "48": "assets/icon/red/48.png",
+                "128": "assets/icon/red/128.png" 
+            }
+        });
         cache.lockInState.lockedIn = false;
         await chrome.storage.local.set(cache);
 
         return true;
     }
+
+    await chrome.action.setIcon({
+        path: {
+            "16": "assets/icon/green/16.png",
+            "48": "assets/icon/green/48.png",
+            "128": "assets/icon/green/128.png" 
+        }
+    });
+    cache.lockInState.lockedIn = true;
+    await chrome.storage.local.set(cache);
 
     return false;
 }
@@ -326,9 +343,9 @@ export const pullServerLockInState = async () => {
         resp = await resp.json();
 
         cache.lockInState.unlockTimeEpoch = resp.unlock_time_epoch;
-        cache.lockInState.lockedIn = (cache.lockInState.unlockTimeEpoch > (Date.now() / 1000));
-
         await chrome.storage.local.set(cache);
+
+        await updateLockInState();
 
         return true;
     }

@@ -3,9 +3,18 @@
   "description": "Anti-goon++",
   "version": "1.0",
   "manifest_version": 3,
+  "icons": {
+    "16": "assets/icon/green/16.png",
+    "48": "assets/icon/green/48.png",
+    "128": "assets/icon/green/128.png"
+  },
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "assets/icon-green.png"
+    "default_icon": {
+      "16": "assets/icon/gray/16.png",
+      "48": "assets/icon/gray/48.png",
+      "128": "assets/icon/gray/128.png"
+    }
   },
   "background": {
     "type": "module",

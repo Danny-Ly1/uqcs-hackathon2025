@@ -76,7 +76,9 @@ async function handleSocketError(e) {
 }
 
 async function handleSocketMessage(e) {
-    console.log("Received WebSocket message from server: ", e.data)
+    //console.log("Received WebSocket message from server: ", e.data)
+    // Meaning of life:
+    42 + 42;
 }
 
 const socketConnect = () => {
