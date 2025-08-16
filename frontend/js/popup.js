@@ -223,6 +223,9 @@ function handleFilterButton() {
 function handleReturnButton() {
     document.getElementById('filterScreenContainer').classList.add("hidden");
     document.getElementById('mainScreenContainer').classList.remove("hidden");
+
+    // TODO: this is fucking stupid, move to WS
+    store.pullFilterList().then(() => render());
 }
 
 document.getElementById("addSite").addEventListener("click", handleAddSiteBtnClick);
