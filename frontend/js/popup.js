@@ -16,6 +16,10 @@ const loginPasswordInputTextbox = document.getElementById("loginPasswordInput");
 const registerUsernameInputTextbox = document.getElementById("registerUsernameInput");
 const registerPasswordInputTextbox = document.getElementById("registerPasswordInput");
 
+const groupIdInputTextbox = document.getElementById("groupIdInput");
+const joinGroupBtn = document.getElementById('joinGroupBtn');
+const newGroupBtn = document.getElementById('newGroupBtn');
+
 // Common sites for suggestion
 // Should all be lowercase for comparison against user input
 const commonSites = [
@@ -234,8 +238,6 @@ async function handleLoginBtnClick (e) {
         console.log('DEBUG: is in group?', await store.isInGroup());
         console.log('DEBUG: logged in?', await store.isLoggedIn());
         await render();
-
-        return;
     }
 }
 
@@ -245,15 +247,29 @@ async function handleNewUserBtnClick (e) {
         console.log('DEBUG: is in group?', await store.isInGroup());
         console.log('DEBUG: logged in?', await store.isLoggedIn());
         await render();
-
-        return;
     }
 }
 loginButton.addEventListener("click", handleLoginBtnClick);
 newUserButton.addEventListener("click", handleNewUserBtnClick);
 
 // Group Sign-on Page
+newGroupBtn.addEventListener("click", async function (e) {
+    const res = await store.attemptNewGroup();
+    if (res) {
+        console.log('DEBUG: created new group');
+        console.log('DEBUG: is in group?', await store.isInGroup());
+        await render();
+    }
+});
 
+joinGroupBtn.addEventListener("click", async function (e) {
+    const res = await store.attemptJoinGroup(groupIdInputTextbox.value);
+    if (res) {
+        console.log('DEBUG: joined existing group');
+        console.log('DEBUG: is in group?', await store.isInGroup());
+        await render();
+    }
+});
 
 // Populates Chrome blacklist with list from storage cache
 const updateChromeBlocklist = async () => {

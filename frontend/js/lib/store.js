@@ -94,6 +94,60 @@ export const attemptLoginOrRegister = async (username, password, register) => {
     return true;
 }
 
+// Attempt to create new group with user ID on server, returns false if failed, true if successful
+export const attemptNewGroup = async () => {
+    await refreshCache();
+
+    let resp;
+    try {
+        resp = await fetch(`${API_ENDPOINT}/group`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({'initialUserId': cache.user.id})
+        });
+    } catch (err) {
+        console.log("Request error occurred:", err);
+    }
+    if (resp?.ok) {
+        resp = await resp.json();
+        cache.user.groupId = resp.groupId;
+        await chrome.storage.local.set(cache);
+
+        return true;
+    }
+
+    return false;
+}
+
+// Attempt to join a group with user ID and group ID on server, returns false if failed, true if successful
+export const attemptJoinGroup = async (groupId) => {
+    await refreshCache();
+
+    let resp;
+    try {
+        resp = await fetch(`${API_ENDPOINT}/users/${cache.user.id}/group`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({groupId})
+        });
+    } catch (err) {
+        console.log("Request error occurred:", err);
+    }
+    if (resp?.ok) {
+        resp = await resp.json();
+        cache.user.groupId = resp.groupId;
+        await chrome.storage.local.set(cache);
+
+        return true;
+    }
+
+    return false;
+}
+
 // id of filterList object shall be provided
 export const removeFilterById = async (filterId) => {
     await refreshCache();
