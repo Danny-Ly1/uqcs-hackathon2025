@@ -146,8 +146,17 @@ def reduce_points(user_id: int):
 """
 Sets new points for user
 """
-def set_point(user_id: int, points: int):
+def set_points(user_id: int, points: int):
     execute_command(SET_POINTS, (points, user_id), False)
+
+
+"""
+Gets the points of the selected user
+"""
+GET_POINTS_COMMAND = """SELECT points FROM users WHERE userid = %s"""
+def get_points(user_id: int):
+    results = execute_command(GET_POINTS_COMMAND, (user_id,), True)
+    return results
 
 """
 Updates the groupID for the user
