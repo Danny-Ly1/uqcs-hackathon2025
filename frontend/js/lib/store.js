@@ -72,11 +72,26 @@ export const attemptLoginOrRegister = async (username, password, register) => {
         cache.user.id = resp.id;
         cache.user.username = resp.username;
         await chrome.storage.local.set(cache);
-
-        return true;
+    } else {
+        // The login/register failed, stop here
+        return false;
     }
 
-    return false;
+    let groupResp;
+    try {
+        groupResp = await fetch(`${API_ENDPOINT}/users/${cache.user.id}`, {
+            method: 'GET'
+        });
+    } catch (err) {
+        console.log("Request error occurred:", err);
+    }
+    if (groupResp?.ok) {
+        groupResp = await groupResp.json();
+        cache.user.groupId = groupResp.groupId;
+        await chrome.storage.local.set(cache);
+    }
+
+    return true;
 }
 
 // id of filterList object shall be provided
