@@ -233,9 +233,8 @@ export const lockIn = async (lockInDurationSec) => {
     // TODO: sync with web worker to unlock even when extension popup is not on
 
     await refreshCache();
-    console.log(cache);
     if (cache.lockInState.lockedIn) {
-        throw new Error('Cannot lock-in when already locked in!');
+        return;
     }
 
     cache.lockInState.lockedIn = true;
