@@ -7,11 +7,11 @@ body {
     box-sizing: border-box;
     font-family: sans-serif;
     align-content: center;
-    background-image: url(backgroundmaybe.jpg);
+    background-image: url(assets/backgroundmaybe.jpg);
 }
 
 .webDescription {
-    font-family: "Pixelify Sans", sans-serif;
+    font-family: "Press Start 2P", sans-serif;
     font-weight: bolder;
     text-align: center;
     font-size: x-large;
