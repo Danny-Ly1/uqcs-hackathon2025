@@ -1,4 +1,6 @@
+# Replace this IP with your own LAN IP for hosting multiple connections
 DATA_HOST = '10.89.76.206'
+# DATA_HOST = 'localhost'
 DATABASE = 'postgres'
 USER = 'postgres'
 PASSWORD = '1234'
@@ -53,14 +55,15 @@ INIT_GROUP_TABLE = """
                     """
 
 INIT_FILTER_TABLE = """
-                    CREATE TABLE IF NOT EXISTS filters
+                    CREATE TABLE IF NOT EXISTS filters (
                     linkid SERIAL PRIMARY KEY,
                     url TEXT UNIQUE,
                     groupid INT
+                    )
                     """
 
 DROP_TABLE = """
-            DROP TABLE users;
-            DROP TABLE groups;
-            DROP TABLE filters;
+            DROP TABLE users CASCADE;
+            DROP TABLE groups CASCADE;
+            DROP TABLE filters CASCADE;
             """
