@@ -302,19 +302,22 @@ const updateChromeBlocklist = async () => {
 
     const ruleSet = [];
     const filterList = await store.getFilterList();
-    for(let i = 0; i < filterList.length; i++) {
-        ruleSet.push({
-            id: filterList[i].id,
-            priority: 1,
-            action: {
-              type: "redirect",
-              redirect: { extensionPath: `/blocked.html?host=${filterList[i].url}` },
-            },
-            condition: {
-              urlFilter: `||${filterList[i].url}/`,
-              resourceTypes: ["main_frame"],
-            },
-        });
+    const lockedInState = await store.getLockedInState();
+    if (lockedInState.lockedIn) {
+        for(let i = 0; i < filterList.length; i++) {
+            ruleSet.push({
+                id: filterList[i].id,
+                priority: 1,
+                action: {
+                  type: "redirect",
+                  redirect: { extensionPath: `/blocked.html?host=${filterList[i].url}` },
+                },
+                condition: {
+                  urlFilter: `||${filterList[i].url}/`,
+                  resourceTypes: ["main_frame"],
+                },
+            });
+        }
     }
 
     await chrome.declarativeNetRequest.updateDynamicRules({
