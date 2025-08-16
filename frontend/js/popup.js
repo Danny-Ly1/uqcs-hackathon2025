@@ -1,22 +1,8 @@
+import * as store from './lib/store.js';
+
 const siteInputTextbox = document.getElementById("siteInput");
 const siteList = document.getElementById("siteList");
 const suggestionsBox = document.getElementById("suggestions");
-
-const storageCache = {};
-// Returns a promise until the storageCache is initialised
-const initStorageCache = chrome.storage.local.get().then((items) => {
-    // Initialise the storageCache if the required key doesn't exist
-    if (!items.blockedSites) {
-        console.log('Extension local storage uninitialised, initialising...');
-
-        storageCache.blockedSites = [];
-        chrome.storage.local.set(storageCache);
-
-        return;
-    }
-
-    Object.assign(storageCache, items);
-});
 
 // Common sites for suggestion
 // Should all be lowercase for comparison against user input
@@ -97,11 +83,11 @@ const commonSites = [
 // Render saved sites in the blocked list
 const renderList = async () => {
     siteList.innerHTML = "";
-    storageCache.blockedSites.forEach(site => {
+    (await store.getFilterList()).forEach(filter => {
         const li = document.createElement("li");
 
         const textSpan = document.createElement("span");
-        textSpan.textContent = site;
+        textSpan.textContent = filter.url;
         textSpan.style.marginRight = "10px";
 
         const removeBtn = document.createElement("button");
@@ -109,8 +95,7 @@ const renderList = async () => {
         removeBtn.style.cursor = "pointer";
         removeBtn.addEventListener("click", async (e) => {
             // Implement remove button logic
-            storageCache.blockedSites = storageCache.blockedSites.filter(s => s !== site);
-            await chrome.storage.local.set(storageCache);
+            store.removeFilterById(filter.id);
             renderList();
         });
 
@@ -149,21 +134,18 @@ siteInputTextbox.addEventListener("input", provideSuggestions);
 // Add site button logic
 const handleAddSiteBtnClick = async (e) => {
     // Ensure we're not dealing trying to add plain whitespace
-    const site = siteInputTextbox.value.trim();
-    if (!site) return;
+    const siteUrl = siteInputTextbox.value.trim();
+    if (!siteUrl) return;
 
-    // Only add site when the site isn't in our existing list
-    if (!storageCache.blockedSites.includes(site)) {
-        storageCache.blockedSites.push(site);
-    } else {
-        // Cleanup
+    // Only add site when the site isn't in our filter list
+    if (await store.isURLInFilterList(siteUrl)) {
         siteInputTextbox.value = "";
         suggestionsBox.innerHTML = "";
 
         return;
     }
 
-    await chrome.storage.local.set(storageCache);
+    await store.addFilter(siteUrl);
 
     // Update shown list and ruleset
     await Promise.all([renderList(), updateChromeBlocklist()]);
@@ -182,16 +164,17 @@ const updateChromeBlocklist = async () => {
     const oldRuleIds = oldRules.map((rule) => rule.id);
 
     const ruleSet = [];
-    for(let i = 0; i < storageCache.blockedSites.length; i++) {
+    const filterList = await store.getFilterList();
+    for(let i = 0; i < filterList.length; i++) {
         ruleSet.push({
             id: i + 1, // Ruleset ID cannot equal 0
             priority: 1,
             action: {
               type: "redirect",
-              redirect: { extensionPath: `/blocked.html?host=${storageCache.blockedSites[i]}` },
+              redirect: { extensionPath: `/blocked.html?host=${filterList[i].url}` },
             },
             condition: {
-              urlFilter: `||${storageCache.blockedSites[i]}/`,
+              urlFilter: `||${filterList[i].url}/`,
               resourceTypes: ["main_frame"],
             },
         });
@@ -205,8 +188,9 @@ const updateChromeBlocklist = async () => {
 
 // Mainline
 (async () => {
+    await store.waitForBrowserStoreInit();
+
     // Render saved sites, and load them into Chrome ruleset
-    await initStorageCache;
     renderList();
     updateChromeBlocklist();
 
