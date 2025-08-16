@@ -125,8 +125,11 @@ Updates the groupID for the user
 def updateGroupID(user_id: int, group_id: int):
     with connect_database() as conn:
         with conn.cursor() as cursor:
-            cursor.execute("""UPDATE Users SET groupID = %s WHERE userID = %s""", (group_id, user_id))
+            cursor.execute("""UPDATE Users SET groupID = %s WHERE userID = %s RETURNING groupID""", (group_id, user_id))
+            results = cursor.fetchone()
             conn.commit()
+
+            return results[0]
 
 # Table setup functions
 """
@@ -201,15 +204,15 @@ def check_login(username: str, password: str):
 
 def add_group():
     with connect_database() as conn:
-
-        cur = conn.cursor()
-        cur.execute("""
-                    INSERT INTO groups (links)
-                    VALUES (%s)
-                    """, ([], ))
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                        INSERT INTO groups (links)
+                        VALUES (%s) RETURNING groupID
+                        """, ([],))
+            results = cursor.fetchone()
+            return results[0]
         
-    conn.commit()
-    conn.close()
+
 
 
 
@@ -217,5 +220,8 @@ def add_group():
 def get_all():
     with connect_database() as conn:
         with conn.cursor() as cursor:
-            cursor.execute("""SELECT * FROM Groups""")
+            cursor.execute("""SELECT * FROM users""")
             return cursor.fetchall()
+
+
+print(add_group())
