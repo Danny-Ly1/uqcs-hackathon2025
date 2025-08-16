@@ -1,30 +1,24 @@
 from flask import Flask, request, jsonify, make_response
 from discord_webhook import DiscordEmbed, DiscordWebhook
-import psycopg2
 import time
 import database
-
 from flask_sock import Sock
-
-import asyncio
-from websockets.asyncio.server import serve
-
-
-DATA_HOST = '10.89.76.206'
-DATABASE = 'postgres'
-USER = 'postgres'
-PASSWORD = '1234'
-PORT = '5432'
+from queries import *
 
 app = Flask(__name__)
 sock = Sock(app)
 
+"""
+Root test
+"""
 @app.route('/')
 def hello_world():
     host_ip = request.host
     return host_ip
 
-#create a test route
+"""
+Test path
+"""
 @app.route('/test', methods=['GET'])
 def test():
     return make_response(jsonify({'message': 'test route'}), 200)
@@ -40,10 +34,9 @@ def create_user():
         data = request.get_json()
         username: str = data['username']
         password: str = data['password']
-        # check both of these fields were specified
-        assert(username and password)
+
+        assert(username and password) # check both of these fields were specified
         result = database.add_user(username, password)
-        print(result)
         return make_response(jsonify({'id': result[0], 'username': result[1]}), 201)
     except:
         return make_response(jsonify({'message': 'Error creating user'}), 400)
@@ -69,8 +62,7 @@ def get_user(id):
     GET a specific user, via their id
     """
     try:
-        # should already know user id
-        (dummyid, username, groupID, points) = database.get_user(id)
+        (dummyid, username, groupID, points) = database.get_user(id) # should already know user id
         payload = None
         if not groupID:
             payload = jsonify({'id': id, 'username': username, 'groupId': None, 'points': points})
@@ -87,7 +79,7 @@ def update_usergroup(id):
     """
     try:
         data = request.get_json()
-        groupID = int(data['groupId'])  # TODO: check if this should be int or str
+        groupID = int(data['groupId'])
         # should already know groupid
         (dummyGroupID) = database.updateGroupID(id, groupID)
         return make_response(jsonify({'groupId': groupID}), 200)
@@ -105,13 +97,11 @@ def create_group():
         userID = data['initialUserId']
         groupID = database.add_group()
         # Add initial user as first member of group
-        # TODO: force users to only join 1 group
         database.updateGroupID(userID, groupID[0])
         return make_response(jsonify({'groupId': groupID[0]}), 200)
     except:
         return make_response(jsonify({'message': 'Error creating group'}), 400)
 
-# BIGGER TODO: FIX THIS TAKING USER ID AND NOT GROUPID
 # Get the group countdown from a user's id
 @app.route('/group/<int:id>/locked_in', methods=['GET'])
 def get_group_countdown(id):
@@ -120,7 +110,6 @@ def get_group_countdown(id):
         return make_response(jsonify({'unlock_time_epoch': result[0]}), 200)
     except:
         return make_response(jsonify({'message': 'Error getting group locked in state'}), 400)
-    return make_response(jsonify({'message': 'Unfinished'}), 501)
 
 # Update group with locked_in count
 @app.route('/group/<int:id>/locked_in', methods=['POST'])
@@ -132,10 +121,6 @@ def update_group_countdown(id):
         return make_response(jsonify({'unlock_time_epoch': new_time[0]}), 200)
     except:
         return make_response(jsonify({'message': 'Error updating unlock time'}), 400)
-    if False:
-        # TODO: logic for calculating future epoch
-        return make_response(jsonify({'message': 'Error updating group locked in state'}), 400)
-    return make_response(jsonify({'message': 'Unfinished'}), 501)
 
 # Get rule list
 @app.route('/groups/<int:id>/filter_list', methods=['GET'])
@@ -218,7 +203,6 @@ def gain_points(id):
     except:
         return make_response(jsonify({'message': 'Bad '}), 400)
 
-
 # Showing leaderboard for lowest number of points
 # Haven't tested and isn't required to be implemented
 @app.route('/users/<int:id>/leaderboard', methods=['POST'])
@@ -228,7 +212,6 @@ def show_leaderboard():
         return make_response(jsonify({'leaderboard': results}), 200)
     except:
         return make_response(jsonify({'message': 'Bad '}), 400)
-
 
 """
 Allow ping
