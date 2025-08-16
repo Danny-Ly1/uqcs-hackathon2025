@@ -26,6 +26,10 @@ body {
     font-family: "Press Start 2P", sans-serif;
 }
 
+.smallerDiv {
+    font-family: "Press Start 2P", sans-serif;
+}
+
 #centreMePls {
     align-self: center;
     font-family: "Press Start 2P", sans-serif;
@@ -55,6 +59,14 @@ body {
     align-items: center;
     width: 100%;
     margin: 10px 0;
+}
+
+.smallerDiv {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 0px 0;
 }
 
 #userDetailsContainer,
