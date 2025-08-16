@@ -6,7 +6,7 @@ const suggestionsBox = document.getElementById("suggestions");
 const powerButton = document.getElementById("powerButton");
 const powerButtonImg = document.getElementById("powerButtonImg");
 
-let isLockedIn = false;
+let lockInUpdateInterval = null;
 
 // Common sites for suggestion
 // Should all be lowercase for comparison against user input
@@ -84,8 +84,9 @@ const commonSites = [
     "popcrush.com"
 ];
 
-// Render saved sites in the blocked list
-const renderList = async () => {
+// Render filter list and button state
+const render = async () => {
+    // Render filter list
     siteList.innerHTML = "";
     (await store.getFilterList()).forEach(filter => {
         const li = document.createElement("li");
@@ -100,7 +101,7 @@ const renderList = async () => {
         removeBtn.addEventListener("click", async (e) => {
             // Implement remove button logic
             store.removeFilterById(filter.id);
-            renderList();
+            render();
             updateChromeBlocklist();
         });
 
@@ -108,6 +109,11 @@ const renderList = async () => {
         li.appendChild(removeBtn);
         siteList.appendChild(li);
     });
+
+    // Render button state
+    const lockInState = store.getLockedInState();
+    powerButtonImg.src = lockInState.lockedIn ?
+        "assets/Powerbutton-Green.png" : "assets/Powerbutton-Red.png";
 }
 
 // Handle siteInputTextbox input events to show suggestions as you type
@@ -153,20 +159,23 @@ const handleAddSiteBtnClick = async (e) => {
     await store.addFilter(siteUrl);
 
     // Update shown list and ruleset
-    await Promise.all([renderList(), updateChromeBlocklist()]);
+    await Promise.all([render(), updateChromeBlocklist()]);
 
     // Cleanup user input
     siteInputTextbox.value = "";
     suggestionsBox.innerHTML = "";
 }
 
-function handlePowerBtnClick() {
-    isLockedIn = !isLockedIn;
-    if (isLockedIn) {
-        powerButtonImg.src = "assets/Powerbutton-Green.png";
-    } else {
-        powerButtonImg.src = "assets/Powerbutton-Red.png";
-    }
+const handlePowerBtnClick = async () => {
+    // TODO: CHANGE ME
+    // Lock-in for 5 seconds
+    await store.lockIn(5);
+    await render();
+
+    lockInUpdateInterval = setInterval(async () => {
+        console.log(store.getLockedInState());
+        (await store.updateLockInState()) ? (() => {render(); clearInterval(lockInUpdateInterval)})() : null;
+    }, 577);
 }
 
 document.getElementById("addSite").addEventListener("click", handleAddSiteBtnClick);
@@ -205,8 +214,10 @@ const updateChromeBlocklist = async () => {
 (async () => {
     await store.waitForBrowserStoreInit();
 
-    // Render saved sites, and load them into Chrome ruleset
-    renderList();
+    await store.updateLockInState();
+
+    // Render page elements and update Chrome ruleset
+    render();
     updateChromeBlocklist();
 
     document.getElementById('mainScreenContainer').style.visibility = 'visible';

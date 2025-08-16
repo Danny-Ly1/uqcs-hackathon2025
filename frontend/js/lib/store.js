@@ -10,12 +10,14 @@ export const waitForBrowserStoreInit = async () => {
     const browserStore = await chrome.storage.local.get();
 
     // Initialise the storageCache if the required key doesn't exist
-    if (!browserStore.filterList) {
+    if (!browserStore.filterList || !browserStore.lockInState) {
         console.log('Extension local storage uninitialised, initialising...');
 
         chrome.storage.local.clear();
 
         cache.filterList = [];
+        cache.lockInState = {lockedIn: false, unlockTimeEpoch: 0};
+
         chrome.storage.local.set(cache);
 
         return;
@@ -27,6 +29,7 @@ export const waitForBrowserStoreInit = async () => {
 // TYPES:
 // filter: {id: number (greater than 0, integer), url: string}
 // filterList: filter[]
+// lockedInState: {lockedIn: boolean, unlockTimeEpoch: number (epoch second of unlock time)}
 
 // id of filterList object shall be provided
 export const removeFilterById = async (filterId) => {
@@ -65,8 +68,45 @@ export const addFilter = async (url) => {
     return newFilter;
 }
 
+// Return lockedInState object
+export const getLockedInState = () => cache.lockInState;
+
+// Set lock in state to true with duration
+export const lockIn = async (lockInDurationSec) => {
+    if (!lockInDurationSec || lockInDurationSec <= 0) {
+        throw new Error('Invalid lock-in duration specified');
+    }
+
+    // TODO: set lock-in on server side, and get unlock epoch from server side
+    // TODO: sync with web worker to unlock even when extension popup is not on
+
+    cache.lockInState.lockedIn = true;
+    cache.lockInState.unlockTimeEpoch = Math.floor((Date.now() / 1000) + (lockInDurationSec));
+
+    await chrome.storage.local.set(cache);
+}
+
+// Checks the current time, and compares it with the lock-in time
+// Returns true, when current time is beyond unlock time
+// TODO: come up with better method to do unlock when time is up
+export const updateLockInState = async () => {
+    const epochSec = Date.now() / 1000;
+    if ((cache.lockInState.unlockTimeEpoch - epochSec) <= 0) {
+        cache.lockInState.lockedIn = false;
+        await chrome.storage.local.set(cache);
+
+        return true;
+    }
+
+    return false;
+}
+
 export const getServerFilterList = async () => {
     // TODO: replace local list with server filter list
+}
+
+export const getServerLockInState = async () => {
+    // TODO: replace local state with server locked in state
 }
 
 // returns array of filter object
