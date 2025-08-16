@@ -232,3 +232,13 @@ def set_webhook(webhook: str, groupid):
 
 def get_webhook(groupid):
   execute_command(GET_WEBHOOK, (groupid, ), False);
+
+
+GET_URL_COMMAND = """SELECT groupid, links FROM Groups WHERE groupid = %s"""
+def get_urls(group_id: int):
+    results = execute_command(GET_URL_COMMAND, (group_id,), True)
+    if results[1] is None:
+        results = list(results)
+        results[1] = []
+
+    return tuple(results)
