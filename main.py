@@ -218,6 +218,17 @@ def gain_points(id):
         return make_response(jsonify({'message': 'Bad '}), 400)
 
 
+# Showing leaderboard for lowest number of points
+# Haven't tested and isn't required to be implemented
+@app.route('/users/<int:id>/leaderboard', method=['POST'])
+def show_leaderboard():
+    try:
+        results = database.get_worst_leaderboard()
+        return make_response(jsonify({'leaderboard': results}), 200)
+    except:
+        return make_response(jsonify({'message': 'Bad '}), 400)
+
+
 """
 Usage: call access database when needing to change anything.
 
