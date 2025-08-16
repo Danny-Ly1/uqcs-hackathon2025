@@ -9,15 +9,6 @@ PORT = '5432'
 
 app = Flask(__name__)
 
-class User():
-    id = None
-    username = None
-    email = None
-    # add init method that takes email and name
-
-    def json(self):
-        return {'id': self.id,'username': self.username, 'email': self.email}
-
 @app.route('/')
 def hello_world():
     host_ip = request.host
@@ -28,65 +19,85 @@ def hello_world():
 def test():
     return make_response(jsonify({'message': 'test route'}), 200)
 
-
+################################## USERS #####################################
 # create a user
-@app.route('/users', methods=['POST'])
+@app.route('/user', methods=['POST'])
 def create_user():
     try:
         data = request.get_json()
-        # ADD USER TO DATABASE, FIELDS ARE EMAIL AND NAME
-        return make_response(jsonify({'message': 'user created'}), 201)
+        username = data['username']
+        password = data['password']
+        # check both of these fields were specified
+        assert(username and password)
+        # ADD USER TO DATABASE, FIELDS ARE USERNAME AND PASSWORD
+        # id = database.insert_user(username, password)
+        id = 0
+        return make_response(jsonify({'id': id, 'username': username}), 201)
     except:
-        return make_response(jsonify({'message': 'error creating user'}), 500)
-
-# get all users
-@app.route('/users', methods=['GET'])
-def get_users():
-    try:
-        # QUERY DATABASE FOR LIST OF ALL USERS, WHICH IS A COLLECTION OF USER
-        users = []
-        return make_response(jsonify([user.json() for user in users]), 200)
-    except:
-        return make_response(jsonify({'message': 'error getting users'}), 500)
+        return make_response(jsonify({'message': 'error creating user'}), 400)
 
 # get a user by id
 @app.route('/users/<int:id>', methods=['GET'])
 def get_user(id):
     try:
         # QUERY DATABASE FOR USER WHOSE ID MATCHES FUNCTION ARGUMENT
-        user = None
-        if user:
-            return make_response(jsonify({'user': user.json()}), 200)
-        return make_response(jsonify({'message': 'user not found'}), 404)
+        # (username, groupID) = database.query_specific_user(id)
+        username = None
+        groupID = None
+        assert(username)
+        return make_response(jsonify({'id': id, 'username': username, 'groupId': groupID}), 200)
     except:
-        return make_response(jsonify({'message': 'error getting user'}), 500)
+        return make_response(jsonify({'message': 'error getting user'}), 400)
 
-# update a user
-@app.route('/users/<int:id>', methods=['PUT'])
-def update_user(id):
+# update a user's group
+@app.route('/users/<int:id>/group', methods=['POST'])
+def update_usergroup():
     try:
-        # QUERY DATABASE FOR USER WHOSE ID MATCHES FUNCTION ARGUMENT
-        user = None
-        if user:
-            # UPDATE THE USER FIELDS IN THE DATABASE
-            return make_response(jsonify({'message': 'user updated'}), 200)
-        return make_response(jsonify({'message': 'user not found'}), 404)
+        data = request.get_json()
+        groupID = data['groupId']
+        # is_success = database.update_usergroup(groupID)
+        is_success = True
+        assert is_success
+        return make_response(jsonify({'groupId': groupID}), 200)
     except:
-        return make_response(jsonify({'message': 'error updating user'}), 500)
+        return make_response(jsonify({'message': 'error updating user'}), 400)
 
-# delete a user
-@app.route('/users/<int:id>', methods=['DELETE'])
-def delete_user(id):
+############################### GROUPS ####################################
+# Create a group
+@app.route('/group/<int:id>')
+def create_group(id):
     try:
-        # QUERY DATABASE FOR USER WHOSE ID MATCHES FUNCTION ARGUMENT
-        user = None
-        if user:
-            # DELETE THE USER IN THE DATABASE
-            return make_response(jsonify({'message': 'user deleted'}), 200)
-        return make_response(jsonify({'message': 'user not found'}), 404)
+        # groupID = database.create_group()
+        groupID = None
+        assert(groupID)
+        # call update user group with id
+        return make_response(jsonify({'groupId': groupID}), 200)
     except:
-        return make_response(jsonify({'message': 'error deleting user'}), 500)
+        return make_response(jsonify({'message': 'error updating user'}), 400)
 
+@app.route('/group/<int:id>/locked_in', methods=['GET'])
+def get_group_countdown(id):
+    return make_response(jsonify({'message': 'error updating user'}), 400)
+
+# Update group with locked_in count
+@app.route('/group/<int:id>/locked_in', methods=['POST'])
+def update_group_countdown(id):
+    return make_response(jsonify({'message': 'error updating user'}), 400)
+
+# Get rule
+@app.route('/groups/<int:id>/filter_list', methods=['GET'])
+def get_group_rulelist(id):
+    return make_response(jsonify({'message': 'error updating user'}), 400)
+
+# Add rule
+@app.route('/groups/<int:id>/filter_list', methods=['POST'])
+def create_group_rule(id):
+    return make_response(jsonify({'message': 'error updating user'}), 400)
+
+# Remove rule
+@app.route('/groups/<int:id>/filter_list/<int:ruleId>', methods=['DELETE'])
+def remove_group_rule(id, ruleId):
+    return make_response(jsonify({'message': 'error updating user'}), 400)
 
 """
 Usage: call access database when needing to change anything.
@@ -103,10 +114,13 @@ def access_database():
     
     cur = conn.cursor()
     # Insert SQL between the """
+    print("hello world")
     cur.execute("""
-    
+    SELECT * FROM groups
     """)
     results = cur.fetchall() # Fetches all output from above query
+    print(results)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
+    access_database()
