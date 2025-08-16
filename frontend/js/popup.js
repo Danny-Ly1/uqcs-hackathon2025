@@ -20,6 +20,9 @@ const groupIdInputTextbox = document.getElementById("groupIdInput");
 const joinGroupBtn = document.getElementById('joinGroupBtn');
 const newGroupBtn = document.getElementById('newGroupBtn');
 
+const timerElement = document.getElementById('timer');
+const pomodoroSelector = document.getElementById('pomodoroSelectorSeconds');
+
 // Common sites for suggestion
 // Should all be lowercase for comparison against user input
 const commonSites = [
@@ -156,6 +159,15 @@ const renderHomeScreen = async () => {
     const lockInState = await store.getLockedInState();
     powerButtonImg.src = lockInState.lockedIn ?
         "assets/Powerbutton-Green.png" : "assets/Powerbutton-Red.png";
+
+    if (lockInState.lockedIn) {
+        startCountdown(lockInState.unlockTimeEpoch * 1000);
+        makeInvisibleById('filterButtonDiv');
+        makeInvisibleById('selectorDiv');
+    } else {
+        makeVisibleById('filterButtonDiv');
+        makeVisibleById('selectorDiv');
+    }
 }
 
 // Handle siteInputTextbox input events to show suggestions as you type
@@ -209,9 +221,7 @@ const handleAddSiteBtnClick = async (e) => {
 }
 
 const handlePowerBtnClick = async () => {
-    // TODO: CHANGE ME
-    // Lock-in for 5 seconds
-    await store.lockIn(5);
+    await store.lockIn(Number(pomodoroSelector.value));
     await render();
 }
 
@@ -302,6 +312,34 @@ const updateChromeBlocklist = async () => {
         addRules: ruleSet,
     });
 }
+
+let countdownUpdateInterval = null;
+const startCountdown = (endEpochMs) => {
+    if (countdownUpdateInterval !== null) return;
+
+    // adapted from https://www.w3schools.com/howto/howto_js_countdown.asp
+    countdownUpdateInterval = setInterval(function () {
+        const delta = endEpochMs - Date.now();
+
+        if (delta < 0) {
+            clearInterval(countdownUpdateInterval);
+            timerElement.textContent = '';
+            
+            makeInvisibleById('timerDiv');
+            countdownUpdateInterval = null;
+
+            return;
+        }
+
+        const hours = Math.floor((delta % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((delta % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((delta % (1000 * 60)) / 1000);
+
+        timerElement.textContent = `${hours}:${minutes}:${seconds}`;
+        makeVisibleById('timerDiv');
+    }, 191);
+}
+
 
 // Mainline
 (async () => {
