@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, make_response
 import psycopg2
+import time
 import database
 
 DATA_HOST = '10.89.76.206'
@@ -33,8 +34,9 @@ def create_user():
         password: str = data['password']
         # check both of these fields were specified
         assert(username and password)
-        id = database.add_user(username, password)
-        return make_response(jsonify({'id': id, 'username': username}), 201)
+        result = database.add_user(username, password)
+        print(result)
+        return make_response(jsonify({'id': result[0], 'username': result[1]}), 201)
     except:
         return make_response(jsonify({'message': 'Error creating user'}), 400)
 
@@ -48,8 +50,8 @@ def check_for_user():
         username: str = data['username']
         password: str = data['password']
         # check both of these fields were specified
-        id = database.check_login(username, password)
-        return make_response(jsonify({'id': id, 'username': username}), 200)
+        result = database.check_login(username, password)
+        return make_response(jsonify({'id': result[0], 'username': result[1]}), 200)
     except:
         return make_response(jsonify({'message': 'Error logging into user'}), 400)
 
@@ -85,7 +87,7 @@ def update_usergroup(id):
         return make_response(jsonify({'message': 'Error updating user'}), 400)
 
 ############################### GROUPS ####################################
-@app.route('/group')
+@app.route('/group', methods=['POST'])
 def create_group():
     """
     Create a group
@@ -95,8 +97,9 @@ def create_group():
         userID = data['initialUserId']
         groupID = database.add_group()
         # Add initial user as first member of group
-        database.updateGroupID(userID, groupID)
-        return make_response(jsonify({'groupId': groupID}), 200)
+        # TODO: force users to only join 1 group
+        database.updateGroupID(userID, groupID[0])
+        return make_response(jsonify({'groupId': groupID[0]}), 200)
     except:
         return make_response(jsonify({'message': 'Error creating group'}), 400)
 
@@ -104,19 +107,23 @@ def create_group():
 # Get the group countdown from a user's id
 @app.route('/group/<int:id>/locked_in', methods=['GET'])
 def get_group_countdown(id):
-    if False:
-        try:
-            # TODO: something funky is going on
-            (locked_in, unlock_time_epoch) = database.check_lock(id)
-            return make_response(jsonify({'locked_in': locked_in,
-            'unlock_time_epoch': unlock_time_epoch}), 200)
-        except:
-            return make_response(jsonify({'message': 'Error getting group locked in state'}), 400)
+    try:
+        result = database.check_lock(id)
+        return make_response(jsonify({'unlock_time_epoch': result[0]}), 200)
+    except:
+        return make_response(jsonify({'message': 'Error getting group locked in state'}), 400)
     return make_response(jsonify({'message': 'Unfinished'}), 501)
 
 # Update group with locked_in count
 @app.route('/group/<int:id>/locked_in', methods=['POST'])
 def update_group_countdown(id):
+    try: 
+        data = request.get_json()
+        update_time = int(data['timer_duration']) + (time.time_ns() / (10 ** 9))
+        new_time = database.set_lock_in(id, update_time)
+        return make_response(jsonify({'unlock_time_epoch': new_time[0]}), 200)
+    except:
+        return make_response(jsonify({'message': 'Error updating unlock time'}), 400)
     if False:
         # TODO: logic for calculating future epoch
         return make_response(jsonify({'message': 'Error updating group locked in state'}), 400)
@@ -127,8 +134,8 @@ def update_group_countdown(id):
 def get_group_rulelist(id):
     try:
         (groupID, urls) = database.get_urls(id)
-        print(f"groupID: {groupID}")
-        print(f"urls: {urls}")
+        # print(f"groupID: {groupID}")
+        # print(f"urls: {urls}")
         return make_response(jsonify({urls}, 200))
     except:
         return make_response(jsonify({'message': 'Error getting group filter list'}), 400)
@@ -136,8 +143,14 @@ def get_group_rulelist(id):
 # Add rule
 @app.route('/groups/<int:id>/filter_list', methods=['POST'])
 def create_group_rule(id):
-    data = request.get_json()
-    return make_response(jsonify({'message': 'Error adding a rule to filter list'}), 400)
+    try:
+        data = request.get_json()
+        url = data['url']
+        database.add_blocked_url(id, url)
+        print()
+        return make_response(jsonify({id, url}, 200))
+    except:
+        return make_response(jsonify({'message': 'Error adding a rule to filter list'}), 400)
 
 # Remove rule
 @app.route('/groups/<int:id>/filter_list/<int:ruleId>', methods=['DELETE'])
@@ -173,12 +186,12 @@ def access_database():
     
     cur = conn.cursor()
     # Insert SQL between the """
-    print("hello world")
+    # print("hello world")
     cur.execute("""
     SELECT * FROM USERS
     """)
     results = cur.fetchall() # Fetches all output from above query
-    print(results)
+    # print(results)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
