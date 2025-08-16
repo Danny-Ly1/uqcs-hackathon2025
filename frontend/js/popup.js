@@ -7,6 +7,8 @@ const powerButton = document.getElementById("powerButton");
 const powerButtonImg = document.getElementById("powerButtonImg");
 const filterButton = document.getElementById("filterButton");
 const returnButton = document.getElementById("returnButton");
+const loginButton = document.getElementById("loginButton");
+const newUserButton = document.getElementById("newUserButton");
 
 let lockInUpdateInterval = null;
 
@@ -190,12 +192,20 @@ function handleReturnButton() {
     document.getElementById('mainScreenContainer').classList.remove("hidden");
 }
 
+function justStartProgram() {
+    document.getElementById('userDetailsContainer').classList.add("hidden");
+    document.getElementById('mainScreenContainer').classList.remove("hidden");
+}
+
 
 document.getElementById("addSite").addEventListener("click", handleAddSiteBtnClick);
 powerButton.addEventListener("click", handlePowerBtnClick);
 filterButton.addEventListener("click", handleFilterButton);
 returnButton.addEventListener("click", handleReturnButton);
 
+// PLACEHOLDER FUNCTIONS FOR LOGIN AND NEW USER THINGIES
+loginButton.addEventListener("click", justStartProgram);
+newUserButton.addEventListener("click", justStartProgram);
 
 // Populates Chrome blacklist with list from storage cache
 const updateChromeBlocklist = async () => {
@@ -236,5 +246,5 @@ const updateChromeBlocklist = async () => {
     render();
     updateChromeBlocklist();
 
-    document.getElementById('mainScreenContainer').classList.remove("hidden");
+    document.getElementById('userDetailsContainer').classList.remove("hidden");
 })();
