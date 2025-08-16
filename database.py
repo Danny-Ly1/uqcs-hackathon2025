@@ -30,7 +30,9 @@ INIT_USER_TABLE = """CREATE TABLE IF NOT EXISTS users (
 INIT_GROUP_TABLE = """
                     CREATE TABLE IF NOT EXISTS groups (
                     groupid SERIAL PRIMARY KEY,
-                    links TEXT[])
+                    links TEXT[],
+                    elapsedtime BIGINT
+                    )
                     """
 
 DROP_TABLE = """
@@ -197,18 +199,27 @@ def add_group():
 """
 Set epoch time in the db
 """
-SET_EPOCH_TIME_COMMAND = """INSERT INTO Groups (epoch_time, lock_in) VALUES (%s, True) WHERE groupID = %s"""
+SET_EPOCH_TIME_COMMAND = """UPDATE Groups SET elapsedtime = %s, lockedin = true WHERE groupID = %s"""
 def set_lock_in(groupID: int, epoch_time: int):
-    pass
+    execute_command(SET_EPOCH_TIME_COMMAND, (epoch_time, groupID), False)
 
 """
 Obtain epoch time and lock in state
 """
-def get_lock_in():
-    pass
+GET_LOCK_STATUS = """SELECT lockedin FROM groups WHERE groupid = %s"""
+def check_lock(userid):
+    group_id = execute_command(GET_GROUP_ID, (userid, ), True)
+    lock = execute_command(GET_LOCK_STATUS, (group_id, ), True)[0]
+    print(lock)
+    if lock == True:
+        print("GETOUT")
+    else:
+        print("go ahead")
 
 """
 Update lock in state and epoch timer
 """
-def update_lock_in():
-    pass
+REMOVE_LOCK_COMMAND = """UPDATE Groups SET lockedin = false WHERE groupID = %s"""
+def remove_lock(groupid):
+    execute_command(REMOVE_LOCK_COMMAND, (groupid, ), False)
+
