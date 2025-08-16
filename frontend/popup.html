@@ -10,7 +10,7 @@
     <div class="squadLockLogo">
         <img src="assets/slwhitebg-removebg-preview(1).png" alt="SQUADLOCK" width="350px">
     </div>
-    <div id="mainScreenContainer" style="visibility: hidden;">
+    <div id="mainScreenContainer">
         <div class="powerDiv">
             <button id="powerButton">
                 <img id="powerButtonImg" src="assets/Powerbutton-Red.png">
@@ -22,7 +22,12 @@
             </button>
         </div>
     </div>
-    <div class="filterScreenContainer" style="visibility: hidden;">
+    <div id="filterScreenContainer" class="hidden">
+        <div class="returnButtonDiv">
+            <button id="returnButton">
+                <img id="returnButtonImg" src="assets/Returnbutton.png">
+            </button>
+        </div>
         <div class="input-row">
             <input id="siteInput" type="text" placeholder="Enter website...">   
             <button id="addSite">Add</button>
