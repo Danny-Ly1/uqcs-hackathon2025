@@ -209,4 +209,6 @@ const updateChromeBlocklist = async () => {
     await initStorageCache;
     renderList();
     updateChromeBlocklist();
+
+    document.getElementById('mainScreenContainer').style.visibility = 'visible';
 })();

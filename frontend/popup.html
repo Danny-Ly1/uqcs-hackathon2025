@@ -7,16 +7,18 @@
     <title>Main Menu</title>
 </head>
 <body>
-    <div class="squadLockLogo">
-        <img src="assets/slwhitebg-removebg-preview.png" alt="SQUADLOCK" width="300">
+    <div id="mainScreenContainer" style="visibility: hidden;">
+        <div class="squadLockLogo">
+            <img src="assets/slwhitebg-removebg-preview.png" alt="SQUADLOCK" width="300">
+        </div>
+        <div class="input-row">
+            <input id="siteInput" type="text" placeholder="Enter website...">   
+            <button id="addSite">Add</button>
+        </div>
+        <div id="suggestions" class="suggestions-box"></div>
+        <ul id="siteList"></ul>
     </div>
-    <div class="input-row">
-        <input id="siteInput" type="text" placeholder="Enter website...">   
-        <button id="addSite">Add</button>
-    </div>
-    <div id="suggestions" class="suggestions-box"></div>
-    <ul id="siteList"></ul>
-    <script src="js/popup.js"></script>
 
+    <script src="js/popup.js"></script>
 </body>
 </html>
