@@ -165,32 +165,42 @@ def remove_group_rule(id, ruleId):
 
 
 #Sends JSON to discord
-def send_webhook(user: str, hook: str):
-    print("reached")
+def send_webhook(user: str, hook: str, infraction: int):
     webhook = DiscordWebhook(url=hook)      
-    embed = DiscordEmbed(title="Blocked Site Access Attempt",
-    description= f"{user} went on a blocked website and lost 10 points. Lock innnnnnn",
-    color="00FF00") 
-
+    if infraction == 1:
+        embed = DiscordEmbed(title="Blocked Site Access Attempt",
+        description= f"{user} went on a blocked website and lost 10 points. LOCK IN!",
+        color="FF0000") 
+        embed.image("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmedia.tenor.com%2FDa_Q9QXAUzUAAAAi%2F" \
+                "angry-fist-emoticon-emoticon.gif&f=1&nofb=1&ipt=a71db1e90a5d" \
+                "e3001eea382f517141c1ec8b1e629de42ec7673aea5d76d41549")
+    if infraction == 2:
+        embed = DiscordEmbed(title="Blocked Site Access Attempt",
+        description= f"{user} quit early and lost 50 points. Next time, LOCK IN!",
+        color="FFFFFF") 
+        embed.image("https://external-content.duckduckgo.com/iu/?u=" \
+        "https%3A%2F%2Fi.imgflip.com%2F740194.png&f=1&nofb=1&ipt=6" \
+        "270529088328ceb3d3f9d2fd94a97ceb4ada92d2e86e584241c0d8352c6e9fe")
     webhook.add_embed(embed)
     webhook.execute()
 
 # User snitching
 @app.route('/groups/<int:id>/infraction', methods=['POST'])
-def alert_discord(id):
+def alert_discord(id, infraction):
     try:
         data = database.get_webhook(id)
-        send_webhook(data[0], data[1])
+        send_webhook(data[0], data[1], infraction)
 
         data = request.get_json()
         user_id = data['userId']
-
-        database.reduce_points(user_id)
+        if infraction == 1:
+            database.reduce_points(user_id, 10)
+        else:
+            database.reduce_points(user_id, 50)
 
         return make_response(jsonify(), 204)
     except:
         return make_response(jsonify({'message': 'Bad '}), 400)
-    
 
 """
 Usage: call access database when needing to change anything.

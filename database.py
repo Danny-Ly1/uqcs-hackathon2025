@@ -105,8 +105,8 @@ def clear_one_url(link_id: int):
 """
 Reduces points of user
 """
-def reduce_points(user_id: int):
-    REDUCTION_AMOUNT = 10
+def reduce_points(user_id: int, points: int):
+    REDUCTION_AMOUNT = points
     execute_command(REDUCE_POINTS, (REDUCTION_AMOUNT, user_id), False)
 
 
