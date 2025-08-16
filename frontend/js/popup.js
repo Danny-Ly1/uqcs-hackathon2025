@@ -5,6 +5,7 @@ const siteList = document.getElementById("siteList");
 const suggestionsBox = document.getElementById("suggestions");
 const powerButton = document.getElementById("powerButton");
 const powerButtonImg = document.getElementById("powerButtonImg");
+const filterButton = document.getElementById("filterButton");
 
 let lockInUpdateInterval = null;
 
@@ -178,8 +179,15 @@ const handlePowerBtnClick = async () => {
     }, 577);
 }
 
+function handleFilterButton() {
+    document.getElementById('mainScreenContainer').style.visibility = 'hidden';
+    document.getElementById('filterScreenContainer').style.visibility = 'visible';
+}
+
 document.getElementById("addSite").addEventListener("click", handleAddSiteBtnClick);
 powerButton.addEventListener("click", handlePowerBtnClick);
+filterButton.addEventListener("click", handleFilterButton);
+
 
 // Populates Chrome blacklist with list from storage cache
 const updateChromeBlocklist = async () => {
