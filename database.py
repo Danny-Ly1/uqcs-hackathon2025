@@ -222,14 +222,17 @@ def get_webhook(userid):
 """
 Obtain URL and groupID from db
 """
-GET_URL_COMMAND = """SELECT groupid, links FROM Groups WHERE groupid = %s"""
+GET_URL_COMMAND = """SELECT linkid, url FROM filters WHERE groupid = %s"""
 def get_urls(group_id: int):
-    results = execute_command(GET_URL_COMMAND, (group_id,), True)
-    if results[1] is None:
-        results = list(results)
-        results[1] = []
+    with connect_database() as conn:
+        with conn.cursor() as cursor:
 
-    return tuple(results)
+            cursor.execute(GET_URL_COMMAND, (group_id,))
+            results = cursor.fetchall()
+    ans = []
+    for entry in results:
+        ans.append({'id': entry[0], 'url': entry[1]})
+    return ans
 
 
 """
