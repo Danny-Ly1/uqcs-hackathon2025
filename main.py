@@ -4,6 +4,10 @@ import psycopg2
 import time
 import database
 
+import asyncio
+from websockets.asyncio.server import serve
+
+
 DATA_HOST = '10.89.76.206'
 DATABASE = 'postgres'
 USER = 'postgres'
@@ -224,6 +228,17 @@ def access_database():
     results = cur.fetchall() # Fetches all output from above query
     # print(results)
 
+################ Server receive ping and send pong 
+async def echo(websocket):
+    async for message in websocket:
+        print(message)
+        await websocket.send("pong")
+
+async def main():
+    async with serve(echo, "10.89.76.206", 8765) as server:
+        await server.serve_forever()
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
     access_database()
+    asyncio.run(main())
