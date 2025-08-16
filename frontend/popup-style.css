@@ -1,0 +1,129 @@
+/* Fixed popup size */
+body {
+    display: flex;
+    flex-direction: column;
+    width: 450px;
+    height: 500px;
+    margin: 0;
+    padding: 10px;
+    box-sizing: border-box;
+    font-family: sans-serif;
+    background-image: url(assets/backgroundmaybe.jpg);
+}
+
+.squadLockLogo {
+    width: 80%;
+    align-self: center;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.mainScreenContainer {
+    align-items: center;
+    text-align: center;
+}
+
+.powerDiv {
+    display: flex;       /* enables flexbox */
+    justify-content: center; /* centers horizontally */
+    align-items: center; /* centers vertically if height is set */
+    width: 100%;         /* span full width of popup */
+    margin: 10px 0;
+}
+
+
+#powerButton {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    
+}
+
+.filterButtonDiv {
+    display: flex;       /* enables flexbox */
+    justify-content: center; /* centers horizontally */
+    align-items: center; /* centers vertically if height is set */
+    width: 100%;         /* span full width of popup */
+    margin: 2px 0;
+}
+
+
+#filterButton {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+#filterButton img {
+    width: 35%;
+}
+
+#filterButton img:hover {
+    filter: brightness(85%); /* 100% is normal brightness */
+}
+
+#powerButton img:hover {
+    filter: brightness(85%); /* 100% is normal brightness */
+}
+
+#powerButton img {
+   display: block;
+   width: 256px;
+   height: 256px;
+}
+
+.input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    width: 100%; /* makes the row span full popup width */
+    box-sizing: border-box; /* ensures gap/padding is included in width */
+}
+
+#siteInput {
+    flex: 1;            /* makes input take all available space */
+}
+
+#addSite {
+    flex: 0;            /* button keeps its natural size */
+}
+
+/* Scrollable blocked sites list */
+#siteList {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+    max-height: 150px;   /* fixed height */
+    overflow-y: auto;    /* scrolls when overflow */
+    border: 1px solid #ccc;
+    background: #fff;
+}
+
+#siteList li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 6px;
+    border-bottom: 1px solid #eee;
+}
+
+.suggestions-box {
+    background: white;
+    max-height: 150px;
+    overflow-y: auto;
+    width: 100%;
+    z-index: 10;
+}
+
+.suggestion-item {
+    padding: 5px;
+    cursor: pointer;
+}
+
+.suggestion-item:hover {
+    background-color: #eee;
+}

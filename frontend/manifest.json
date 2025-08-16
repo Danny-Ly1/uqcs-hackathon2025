@@ -1,0 +1,24 @@
+{
+  "name": "SquadLock",
+  "description": "Anti-goon++",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "assets/extension-logo.png"
+  },
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [ "blocked.html" ],
+      "matches": [ "*://*/*" ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="popup-style.css">
+    <title>Main Menu</title>
+</head>
+<body>
+    <div class="squadLockLogo">
+        <img src="assets/slwhitebg-removebg-preview(1).png" alt="SQUADLOCK" width="350px">
+    </div>
+    <div id="mainScreenContainer" style="visibility: hidden;">
+        <div class="powerDiv">
+            <button id="powerButton">
+                <img id="powerButtonImg" src="assets/Powerbutton-Red.png">
+            </button>
+        </div>
+        <div class="filterButtonDiv">
+            <button id="filterButton">
+                <img id="filterButtonImg" src="assets/Filterbutton.png">
+            </button>
+        </div>
+    </div>
+    <div class="filterScreenContainer" style="visibility: hidden;">
+        <div class="input-row">
+            <input id="siteInput" type="text" placeholder="Enter website...">   
+            <button id="addSite">Add</button>
+        </div>
+        <div id="suggestions" class="suggestions-box"></div>
+        <ul id="siteList"></ul>
+    </div>
+
+    <script type="module" src="js/popup.js"></script>
+</body>
+</html>
