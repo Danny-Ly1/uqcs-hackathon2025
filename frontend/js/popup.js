@@ -146,7 +146,7 @@ const renderHomeScreen = async () => {
             // Implement remove button logic
             await store.removeFilterById(filter.id);
             render();
-            updateChromeBlocklist();
+            store.updateChromeBlocklist();
         });
 
         li.appendChild(textSpan);
@@ -215,7 +215,7 @@ const handleAddSiteBtnClick = async (e) => {
     await store.addFilter(siteUrl);
 
     // Update shown list and ruleset
-    await Promise.all([render(), updateChromeBlocklist()]);
+    await Promise.all([render(), store.updateChromeBlocklist()]);
 
     // Cleanup user input
     siteInputTextbox.value = "";
@@ -295,36 +295,7 @@ joinGroupBtn.addEventListener("click", async function (e) {
 });
 
 // Populates Chrome blacklist with list from storage cache
-const updateChromeBlocklist = async () => {
-    // Find all old rule IDs so we can clear them
-    const oldRules = await chrome.declarativeNetRequest.getDynamicRules();
-    const oldRuleIds = oldRules.map((rule) => rule.id);
 
-    const ruleSet = [];
-    const filterList = await store.getFilterList();
-    const lockedInState = await store.getLockedInState();
-    if (lockedInState.lockedIn) {
-        for(let i = 0; i < filterList.length; i++) {
-            ruleSet.push({
-                id: filterList[i].id,
-                priority: 1,
-                action: {
-                  type: "redirect",
-                  redirect: { extensionPath: `/blocked.html?host=${filterList[i].url}` },
-                },
-                condition: {
-                  urlFilter: `||${filterList[i].url}/`,
-                  resourceTypes: ["main_frame"],
-                },
-            });
-        }
-    }
-
-    await chrome.declarativeNetRequest.updateDynamicRules({
-        removeRuleIds: oldRuleIds,
-        addRules: ruleSet,
-    });
-}
 
 let countdownUpdateInterval = null;
 const startCountdown = (endEpochMs) => {
@@ -362,7 +333,7 @@ const startCountdown = (endEpochMs) => {
 
     // Render page elements and update Chrome ruleset
     await render();
-    await updateChromeBlocklist();
+    await store.updateChromeBlocklist();
 })();
 
 chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {

@@ -336,3 +336,34 @@ export const getFilterList = async () => {
     // Return deep copy
     return JSON.parse(JSON.stringify(cache.filterList));
 }
+
+export const updateChromeBlocklist = async () => {
+    // Find all old rule IDs so we can clear them
+    const oldRules = await chrome.declarativeNetRequest.getDynamicRules();
+    const oldRuleIds = oldRules.map((rule) => rule.id);
+
+    const ruleSet = [];
+    const filterList = await getFilterList();
+    const lockedInState = await getLockedInState();
+    if (lockedInState.lockedIn) {
+        for(let i = 0; i < filterList.length; i++) {
+            ruleSet.push({
+                id: filterList[i].id,
+                priority: 1,
+                action: {
+                  type: "redirect",
+                  redirect: { extensionPath: `/blocked.html?host=${filterList[i].url}` },
+                },
+                condition: {
+                  urlFilter: `||${filterList[i].url}/`,
+                  resourceTypes: ["main_frame"],
+                },
+            });
+        }
+    }
+
+    await chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: oldRuleIds,
+        addRules: ruleSet,
+    });
+}
