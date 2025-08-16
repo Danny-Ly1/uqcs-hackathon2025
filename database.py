@@ -65,7 +65,7 @@ def execute_command(query: str, args: tuple[str], returning: bool):
                 if returning:
                     results = cursor.fetchone()
                     if results == None:
-                        return "SOMETHING WENT VERY WRONG/DOES NOT EXIST"
+                        raise Exception("SOMETHING WENT WRONG")
                     return results
                 conn.commit()
         except psycopg2.ProgrammingError as e:
