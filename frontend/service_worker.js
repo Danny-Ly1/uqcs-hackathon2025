@@ -6,7 +6,7 @@
 //      - client side lockedinstate transitions after timer elapse
 // - filter list updates
 
-import { SW_MESSAGE_TYPES } from "./js/lib/constants.js";
+import { SW_MESSAGE_TYPES, WS_ENDPOINT } from "./js/lib/constants.js";
 import * as store from './js/lib/store.js';
 
 chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
@@ -50,3 +50,41 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
         store.refreshCache();
     }
 });
+
+let socket = null;
+let socketKeepaliveInterval = null;
+
+async function handleSocketOpen(e) {
+    socket.send('ping');
+
+    socketKeepaliveInterval = setInterval(() => {
+        socket.send('ping');
+    }, 15*1000);
+}
+
+async function handleSocketClose(e) {
+    console.log("WebSocket closed: ", e);
+    socket = null;
+    clearInterval(socketKeepaliveInterval);
+}
+
+async function handleSocketError(e) {
+    console.log("WebSocket closed due to error: ", e);
+    socket = null;
+    clearInterval(socketKeepaliveInterval);
+}
+
+async function handleSocketMessage(e) {
+    console.log("Received WebSocket message from server: ", e.data)
+}
+
+const socketConnect = () => {
+    if (socket) { return; }
+    socket = new WebSocket(WS_ENDPOINT);
+
+    socket.addEventListener('open', handleSocketOpen);
+    socket.addEventListener('close', handleSocketClose);
+    socket.addEventListener('error', handleSocketError);
+    socket.addEventListener('message', handleSocketMessage);
+}
+socketConnect();
