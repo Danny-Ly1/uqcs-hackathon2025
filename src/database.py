@@ -193,6 +193,7 @@ def init_database() -> None:
     execute_command(INIT_GROUP_TABLE, None, False)
     execute_command(INIT_FILTER_TABLE, None, False)
 
+
 """
 Clears the database
 """
