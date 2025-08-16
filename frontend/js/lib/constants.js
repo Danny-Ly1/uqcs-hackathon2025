@@ -11,3 +11,4 @@ export const SW_MESSAGE_TYPES = Object.freeze({
 });
 
 export const API_ENDPOINT = 'http://10.89.76.206:5001';
+export const WS_ENDPOINT = 'ws://10.89.76.206:5001/ws';
