@@ -15,8 +15,8 @@ FILTER_DUP_URL = """UPDATE groups SET links = (SELECT array_agg(DISTINCT l ORDER
 CLEAR_URL_ARRAY = """UPDATE groups SET links = %s WHERE groupid = %s"""
 CHECK_VALID_URL = """SELECT COUNT(*) FROM groups, unnest(links) AS element WHERE element = %s AND groupid = %s """
 
-REDUCE_SCORE = """UPDATE users SET points = points - %s WHERE userid = %s"""
-SET_SCORE = """UPDATE users SET points = %s WHERE userid = %s"""
+REDUCE_POINTS = """UPDATE users SET points = points - %s WHERE userid = %s"""
+SET_POINTS = """UPDATE users SET points = %s WHERE userid = %s"""
 
 SET_WEBHOOK = """UPDATE groups SET webhookurl = %s WHERE groupid = %s"""
 GET_WEBHOOK = """SELECT webhookurl FROM groups WHERE groupid = %s"""
@@ -137,17 +137,17 @@ def check_url(user_id, url: str):
 
 
 """
-Reduces score of user
+Reduces points of user
 """
-def reduce_score(user_id: int):
+def reduce_points(user_id: int):
     REDUCTION_AMOUNT = 10
-    execute_command(REDUCE_SCORE, (REDUCTION_AMOUNT, user_id), False)
+    execute_command(REDUCE_POINTS, (REDUCTION_AMOUNT, user_id), False)
 
 """
-Sets new score for user
+Sets new points for user
 """
-def set_score(user_id: int, points: int):
-    execute_command(SET_SCORE, (points, user_id), False)
+def set_point(user_id: int, points: int):
+    execute_command(SET_POINTS, (points, user_id), False)
 
 """
 Updates the groupID for the user
