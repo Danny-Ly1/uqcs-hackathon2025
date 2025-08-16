@@ -67,12 +67,12 @@ def get_user(id):
     """
     try:
         # should already know user id
-        (dummyid, username, groupID) = database.get_user(id)
+        (dummyid, username, groupID, points) = database.get_user(id)
         payload = None
         if not groupID:
-            payload = jsonify({'id': id, 'username': username, 'groupId': None})
+            payload = jsonify({'id': id, 'username': username, 'groupId': None, 'points': points})
         else:
-            payload = jsonify({'id': id, 'username': username, 'groupId': groupID})
+            payload = jsonify({'id': id, 'username': username, 'groupId': groupID, 'points': points})
         return make_response(payload, 200)
     except:
         return make_response(jsonify({'message': 'Error getting user'}), 400)
