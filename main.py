@@ -19,6 +19,7 @@ def hello_world():
 def test():
     return make_response(jsonify({'message': 'test route'}), 200)
 
+<<<<<<< HEAD
 ################################## USERS #####################################
 # create a user
 @app.route('/user', methods=['POST'])
@@ -121,6 +122,8 @@ def access_database():
     results = cur.fetchall() # Fetches all output from above query
     print(results)
 
+=======
+>>>>>>> origin/danny
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
     access_database()
