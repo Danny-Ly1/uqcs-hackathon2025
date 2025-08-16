@@ -3,6 +3,10 @@ import * as store from './lib/store.js';
 const siteInputTextbox = document.getElementById("siteInput");
 const siteList = document.getElementById("siteList");
 const suggestionsBox = document.getElementById("suggestions");
+const powerButton = document.getElementById("powerButton");
+const powerButtonImg = document.getElementById("powerButtonImg");
+
+let isLockedIn = false;
 
 // Common sites for suggestion
 // Should all be lowercase for comparison against user input
@@ -155,7 +159,17 @@ const handleAddSiteBtnClick = async (e) => {
     suggestionsBox.innerHTML = "";
 }
 
+function handlePowerBtnClick() {
+    isLockedIn = !isLockedIn;
+    if (isLockedIn) {
+        powerButtonImg.src = "assets/Powerbutton-Green.png";
+    } else {
+        powerButtonImg.src = "assets/Powerbutton-Red.png";
+    }
+}
+
 document.getElementById("addSite").addEventListener("click", handleAddSiteBtnClick);
+powerButton.addEventListener("click", handlePowerBtnClick);
 
 // Populates Chrome blacklist with list from storage cache
 const updateChromeBlocklist = async () => {
