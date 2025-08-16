@@ -158,7 +158,16 @@ export const removeFilterById = async (filterId) => {
     }
 
     cache.filterList = newFilterList;
-    // TODO: sync with server
+
+    // TODO: more error handling?
+    try {
+        await fetch(`${API_ENDPOINT}/groups/${cache.user.groupId}/filter_list/${filterId}`, {
+            method: 'DELETE'
+        });
+    } catch (err) {
+        console.log("Request error occurred:", err);
+    }
+
     await chrome.storage.local.set(cache);
 }
 
@@ -170,7 +179,7 @@ export const isURLInFilterList = async (url) => {
     return filtered.length > 0;
 }
 
-// returns complete filter object
+// attempts to add to server, returns an empty object if there are errors
 export const addFilter = async (url) => {
     if (!url) {
         throw new Error('Tried to add invalid or empty URL into filter list');
@@ -180,14 +189,32 @@ export const addFilter = async (url) => {
         throw new Error('Tried to add duplicate URL into filter list');
     }
 
-    // TODO: add filter into server so we get ID
-    const newFilter = {id: Math.floor(Math.random() * (42000 - 69) + 69), url};
+    let resp;
 
-    await refreshCache();
-    cache.filterList.push(newFilter);
-    await chrome.storage.local.set(cache);
+    try {
+        resp = await fetch(`${API_ENDPOINT}/groups/${cache.user.groupId}/filter_list`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({url})
+        });
+    } catch (err) {
+        console.log("Request error occurred:", err);
+    }
+    if (resp?.ok) {
+        resp = await resp.json();
 
-    return newFilter;
+        const newFilter = JSON.parse(JSON.stringify(resp));
+
+        await refreshCache();
+        cache.filterList.push(newFilter);
+        await chrome.storage.local.set(cache);
+
+        return newFilter;
+    }
+
+    return {};
 }
 
 // Return lockedInState object
@@ -236,8 +263,28 @@ export const updateLockInState = async () => {
     return false;
 }
 
-export const getServerFilterList = async () => {
-    // TODO: replace local list with server filter list
+// Attempts to pull filter list from server, returns true if successful, false if not.
+export const pullFilterList = async () => {
+    await refreshCache();
+    let resp;
+
+    try {
+        resp = await fetch(`${API_ENDPOINT}/groups/${cache.user.groupId}/filter_list`, {
+            method: 'GET'
+        });
+    } catch (err) {
+        console.log("Request error occurred:", err);
+    }
+    if (resp?.ok) {
+        resp = await resp.json();
+
+        cache.filterList = JSON.parse(JSON.stringify(resp));
+        await chrome.storage.local.set(cache);
+
+        return true;
+    }
+
+    return false;
 }
 
 export const getServerLockInState = async () => {
