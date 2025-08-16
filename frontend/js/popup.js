@@ -233,9 +233,6 @@ function handleFilterButton() {
 function handleReturnButton() {
     document.getElementById('filterScreenContainer').classList.add("hidden");
     document.getElementById('mainScreenContainer').classList.remove("hidden");
-
-    // TODO: this is fucking stupid, move to WS
-    store.pullFilterList().then(() => render());
 }
 
 document.getElementById("addSite").addEventListener("click", handleAddSiteBtnClick);
@@ -341,8 +338,12 @@ const startCountdown = (endEpochMs) => {
 }
 
 
-// Mainline
+// Run on popup open
 (async () => {
+    if ((await store.isInGroup()) && (await store.isLoggedIn)) {
+        await Promise.all([store.pullServerLockInState(), store.pullFilterList()]);
+    }
+
     // Render page elements and update Chrome ruleset
     await render();
     await updateChromeBlocklist();

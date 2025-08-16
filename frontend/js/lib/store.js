@@ -229,20 +229,37 @@ export const lockIn = async (lockInDurationSec) => {
         throw new Error('Invalid lock-in duration specified');
     }
 
-    // TODO: set lock-in on server side, and get unlock epoch from server side
-    // TODO: sync with web worker to unlock even when extension popup is not on
-
     await refreshCache();
     if (cache.lockInState.lockedIn) {
         return;
     }
 
-    cache.lockInState.lockedIn = true;
-    const unlockTimeEpoch = Math.floor((Date.now() / 1000) + (lockInDurationSec));
-    cache.lockInState.unlockTimeEpoch = unlockTimeEpoch;
+    let resp;
+    try {
+        resp = await fetch(`${API_ENDPOINT}/group/${cache.user.groupId}/locked_in`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({timer_duration: lockInDurationSec})
+        });
+    } catch (err) {
+        console.log("Request error occurred:", err);
+    }
+    if (resp?.ok) {
+        resp = await resp.json();
 
-    await chrome.storage.local.set(cache);
-    await chrome.runtime.sendMessage({type: SW_MESSAGE_TYPES.SW_SET_UNLOCK_ALARM, unlockTimeEpoch});
+        cache.lockInState.lockedIn = true;
+        const unlockTimeEpoch = resp.unlock_time_epoch;
+        cache.lockInState.unlockTimeEpoch = unlockTimeEpoch;
+
+        await chrome.runtime.sendMessage({type: SW_MESSAGE_TYPES.SW_SET_UNLOCK_ALARM, unlockTimeEpoch});
+        await chrome.storage.local.set(cache);
+
+        return true;
+    }
+
+    return false;
 }
 
 // Checks the current time, and compares it with the lock-in time
@@ -286,8 +303,30 @@ export const pullFilterList = async () => {
     return false;
 }
 
-export const getServerLockInState = async () => {
-    // TODO: replace local state with server locked in state
+// Retrieve server lock in state, return true if successful, false otherwise
+export const pullServerLockInState = async () => {
+    await refreshCache();
+
+    let resp;
+    try {
+        resp = await fetch(`${API_ENDPOINT}/group/${cache.user.groupId}/locked_in`, {
+            method: 'GET'
+        });
+    } catch (err) {
+        console.log("Request error occurred:", err);
+    }
+    if (resp?.ok) {
+        resp = await resp.json();
+
+        cache.lockInState.unlockTimeEpoch = resp.unlock_time_epoch;
+        cache.lockInState.lockedIn = (cache.lockInState.unlockTimeEpoch > (Date.now() / 1000));
+
+        await chrome.storage.local.set(cache);
+
+        return true;
+    }
+
+    return false;
 }
 
 // returns array of filter object
