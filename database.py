@@ -48,6 +48,29 @@ DROP_TABLE = """
             DROP TABLE filters;
             """
 
+# Helper function to check db and debug
+def get_all():
+    with connect_database() as conn:
+        with conn.cursor() as cursor:
+            # cursor.execute("""SELECT * FROM users WHERE username = 'bob'""")
+            cursor.execute("""SELECT * FROM groups""")
+            return cursor.fetchall()
+
+# Helper function to execute SQL commands
+def execute_command(query: str, args: tuple[str], returning: bool):
+    with connect_database() as conn:
+        try: 
+            with conn.cursor() as cursor:
+                cursor.execute(query, args)
+                if returning:
+                    results = cursor.fetchone()
+                    if results == None:
+                        return "SOMETHING WENT VERY WRONG/DOES NOT EXIST"
+                    return results
+                conn.commit()
+        except psycopg2.ProgrammingError as e:
+            print(f"Database returned error: {e}, aborting...")
+
 
 """
 Creates connection to database
@@ -230,28 +253,3 @@ def init_database():
 # Table drop function
 def drop_database():
     execute_command(DROP_TABLE, None, False)
-
-
-
-# Helper function to check db and debug
-def get_all():
-    with connect_database() as conn:
-        with conn.cursor() as cursor:
-            # cursor.execute("""SELECT * FROM users WHERE username = 'bob'""")
-            cursor.execute("""SELECT * FROM groups""")
-            return cursor.fetchall()
-
-# Helper function to execute SQL commands
-def execute_command(query: str, args: tuple[str], returning: bool):
-    with connect_database() as conn:
-        try: 
-            with conn.cursor() as cursor:
-                cursor.execute(query, args)
-                if returning:
-                    results = cursor.fetchone()
-                    if results == None:
-                        return "SOMETHING WENT VERY WRONG/DOES NOT EXIST"
-                    return results
-                conn.commit()
-        except psycopg2.ProgrammingError as e:
-            print(f"Database returned error: {e}, aborting...")
