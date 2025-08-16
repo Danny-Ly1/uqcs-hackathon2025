@@ -242,6 +242,7 @@ def get_worst_leaderboard():
             cursor.execute(GET_WORST_LEADERBOARD_COMMAND)
             # Returns a list of tuples(username, points)
             results = cursor.fetchall()
+            return results
 
 
 # Table initialise functions
