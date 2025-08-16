@@ -31,7 +31,7 @@ export const waitForBrowserStoreInit = async () => {
 // id of filterList object shall be provided
 export const removeFilterById = async (filterId) => {
     const newFilterList = cache.filterList.filter(f => f.id !== filterId);
-    if (newFilterList.length === 0) {
+    if (newFilterList.length === cache.filterList.length) {
         throw new Error('filterId provided does not exist');
     }
 
@@ -58,7 +58,7 @@ export const addFilter = async (url) => {
     }
 
     // TODO: add filter into server so we get ID
-    const newFilter = {id: (Math.random() * (42000 - 69) + 69), url};
+    const newFilter = {id: Math.floor(Math.random() * (42000 - 69) + 69), url};
     cache.filterList.push(newFilter);
     await chrome.storage.local.set(cache);
 
