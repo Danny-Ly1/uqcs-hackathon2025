@@ -6,6 +6,7 @@ const suggestionsBox = document.getElementById("suggestions");
 const powerButton = document.getElementById("powerButton");
 const powerButtonImg = document.getElementById("powerButtonImg");
 const filterButton = document.getElementById("filterButton");
+const returnButton = document.getElementById("returnButton");
 
 let lockInUpdateInterval = null;
 
@@ -180,13 +181,20 @@ const handlePowerBtnClick = async () => {
 }
 
 function handleFilterButton() {
-    document.getElementById('mainScreenContainer').style.visibility = 'hidden';
-    document.getElementById('filterScreenContainer').style.visibility = 'visible';
+    document.getElementById('mainScreenContainer').classList.add("hidden");
+    document.getElementById('filterScreenContainer').classList.remove("hidden");
 }
+
+function handleReturnButton() {
+    document.getElementById('filterScreenContainer').classList.add("hidden");
+    document.getElementById('mainScreenContainer').classList.remove("hidden");
+}
+
 
 document.getElementById("addSite").addEventListener("click", handleAddSiteBtnClick);
 powerButton.addEventListener("click", handlePowerBtnClick);
 filterButton.addEventListener("click", handleFilterButton);
+returnButton.addEventListener("click", handleReturnButton);
 
 
 // Populates Chrome blacklist with list from storage cache
@@ -228,5 +236,5 @@ const updateChromeBlocklist = async () => {
     render();
     updateChromeBlocklist();
 
-    document.getElementById('mainScreenContainer').style.visibility = 'visible';
+    document.getElementById('mainScreenContainer').classList.remove("hidden");
 })();

@@ -11,6 +11,10 @@ body {
     background-image: url(assets/backgroundmaybe.jpg);
 }
 
+.hidden {
+    display: none;
+}
+
 .squadLockLogo {
     width: 80%;
     align-self: center;
@@ -53,7 +57,7 @@ body {
 #filterButton {
     background: none;
     border: none;
-    padding: 0;
+    padding: 10px;
     cursor: pointer;
 }
 
@@ -62,6 +66,30 @@ body {
 }
 
 #filterButton img:hover {
+    filter: brightness(85%); /* 100% is normal brightness */
+}
+
+.returnButtonDiv {
+    display: flex;       /* enables flexbox */
+    justify-content: center; /* centers horizontally */
+    align-items: center; /* centers vertically if height is set */
+    width: 100%;         /* span full width of popup */
+    margin: 10px 0;
+}
+
+
+#returnButton {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+#returnButton img {
+    width: 35%;
+}
+
+#returnButton img:hover {
     filter: brightness(85%); /* 100% is normal brightness */
 }
 
