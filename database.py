@@ -12,17 +12,34 @@ GROUP_ID_INDEX=3
 Creates connection to database
 """
 def connect_database():
-    try: 
-        conn = psycopg2.connect(
-            host=DATA_HOST,
-            database=DATABASE,
-            user=USER,
-            password=PASSWORD,
-            port=PORT
-        )
-        return conn
-    except psycopg2.Error as e:
-        print(f"Failed connection: {e}, aborting...")
+    conn = psycopg2.connect(
+        host=DATA_HOST,
+        database=DATABASE,
+        user=USER,
+        password=PASSWORD,
+        port=PORT
+    )
+    return conn
+
+
+# Helper function to check db
+def get_all():
+    with connect_database() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""SELECT * FROM users""")
+            return cursor.fetchall()
+        
+# Helper function to execute SQL commands
+def execute_command(query: str, args: tuple[str], returning: bool):
+    with connect_database() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query, args)
+            results = cursor.fetchone()
+            if returning:
+                if results == None:
+                    return "SOMETHING WENT VERY WRONG/DOES NOT EXIST"
+                return results
+            conn.commit()
 
 
 """
@@ -41,9 +58,7 @@ def url_trimmer(url: str) -> str:
         url = url[www_index:org_index]
     elif net_index:
         url = url[www_index:net_index]
-    else:
-        return ""
-        
+
     return url
 
 """
@@ -67,42 +82,34 @@ def add_blocked_url(user_id: int, url: str):
 Clears array of blocked urls
 """
 def clear_url_all(user_id: int):
-    try:
+    with connect_database() as conn:
         cur = conn.cursor()
         cur.execute("""SELECT groupID FROM users WHERE userID = %s""", (user_id, ))
-        group_id = cur.fetchall()
+        group_id = cur.fetchall()[0]
         
-        cur.execute("""UPDATE groups SET links = %s WHERE groupid = %s""", ([], group_id[0])) # Clear tuple
+        cur.execute("""UPDATE groups SET links = %s WHERE groupid = %s""", ([], group_id)) # Clear tuple
         conn.commit()
-    except psycopg2.ProgrammingError as e:
-        print(f"Database error: {e}, aborting...")
+
+    conn.close()
 
 """
 Check if url is in blocklist
 """
 def check_url(user_id, url: str):
     trimmed = url_trimmer(url)
-    if len(trimmed) == 0:
-        print("URL domain name not supported, abandoning check...")
-        return
-    
+
     with connect_database() as conn:
-        try: 
-            cur = conn.cursor()
-            cur.execute("""SELECT groupID FROM users WHERE userID = %s""", (user_id, ))
-            group_id = cur.fetchall()[0][0]
-            cur.execute("""
-                        SELECT COUNT(*)
-                        FROM groups, unnest(links) AS element
-                        WHERE element = %s AND groupid = %s
-                    """, (trimmed, group_id))
-            count = cur.fetchall()[0][0]
-            if count > 0:
-                print("block ts")
-            else:
-                print("not blocked")
-        except psycopg2.ProgrammingError as e:
-            print(f"Database error: {e}, aborting...")
+        cur = conn.cursor()
+        
+        cur.execute("""SELECT groupID FROM users WHERE userID = %s""", (user_id, ))
+        group_id = cur.fetchall()[0][0]
+        cur.execute("""SELECT COUNT(*) FROM groups, unnest(links) AS element
+                    WHERE element = %s AND groupid = %s """, (trimmed, group_id))
+        count = cur.fetchall()[0][0]
+        if count > 0:
+            print("block ts")
+        else:
+            print("not blocked")
     conn.close()
 
 """
@@ -135,14 +142,10 @@ def set_score(user_id: int, score: int):
 """
 Updates the groupID for the user
 """
+UPDATE_GROUPID_COMMAND = """UPDATE Users SET groupID = %s WHERE userID = %s RETURNING groupID"""
 def updateGroupID(user_id: int, group_id: int):
-    with connect_database() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""UPDATE Users SET groupID = %s WHERE userID = %s RETURNING groupID""", (group_id, user_id))
-            results = cursor.fetchone()
-            conn.commit()
-
-            return results[0]
+    results = execute_command(UPDATE_GROUPID_COMMAND, (group_id, user_id), True)
+    return results
 
 # Table setup functions
 """
@@ -184,57 +187,31 @@ def drop_database():
 """
 Adds a user to the database
 """
+ADD_USER_COMMAND = """INSERT INTO users (username, password) VALUES (%s, %s) RETURNING userid, username"""
 def add_user(username: str, password: str) -> int:
-    with connect_database() as conn:
-        cur = conn.cursor()
-        cur.execute("""
-                    INSERT INTO users (username, password)
-                    VALUES (%s, %s) RETURNING userid, username
-                    """, (username, password))
-        user_info = cur.fetchone()
-        return user_info
+    results = execute_command(ADD_USER_COMMAND, (username, password), True)
+    return results
 
-
+"""
+Gets a user from the database
+"""
+GET_USER_COMMAND = """SELECT userid, username, groupid FROM users WHERE userid = %s"""
 def get_user(userid: int):
-    with connect_database() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""SELECT userid, username, groupid FROM users WHERE userid = %s""", (userid,))
-            user_info = cursor.fetchone()
-            if user_info == None:
-                return "ERROR"
-            return user_info
+    user_info = execute_command(GET_USER_COMMAND, (userid,), True)
+    return user_info
 
+"""
+Checks the user credentials against the db
+"""
+CHECK_LOGIN_COMMAND = """SELECT userid, username FROM users WHERE username = %s AND password = %s"""
 def check_login(username: str, password: str):
-    with connect_database() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""(SELECT userid, username FROM users WHERE username = %s AND password = %s)
-                           """, (username, password))
-            result = cursor.fetchone()
-            if result == None:
-                return False
-            return result
+    results = execute_command(CHECK_LOGIN_COMMAND, (username, password), True)
+    return results
 
-
+"""
+Adds a new group to the db
+"""
+ADD_GROUP_COMMAND = """INSERT INTO groups (links) VALUES (%s) RETURNING groupID"""
 def add_group():
-    with connect_database() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                        INSERT INTO groups (links)
-                        VALUES (%s) RETURNING groupID
-                        """, ([],))
-            results = cursor.fetchone()
-            return results[0]
-        
-
-
-
-
-# Helper function to check db
-def get_all():
-    with connect_database() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""SELECT * FROM users""")
-            return cursor.fetchall()
-
-
-print(add_group())
+    results = execute_command(ADD_GROUP_COMMAND, ([],), True)
+    return results
