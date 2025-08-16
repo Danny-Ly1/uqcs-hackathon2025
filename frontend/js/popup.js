@@ -101,6 +101,7 @@ const renderList = async () => {
             // Implement remove button logic
             store.removeFilterById(filter.id);
             renderList();
+            updateChromeBlocklist();
         });
 
         li.appendChild(textSpan);
@@ -181,7 +182,7 @@ const updateChromeBlocklist = async () => {
     const filterList = await store.getFilterList();
     for(let i = 0; i < filterList.length; i++) {
         ruleSet.push({
-            id: i + 1, // Ruleset ID cannot equal 0
+            id: filterList[i].id,
             priority: 1,
             action: {
               type: "redirect",
