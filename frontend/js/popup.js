@@ -236,5 +236,5 @@ const updateChromeBlocklist = async () => {
     render();
     updateChromeBlocklist();
 
-    document.getElementById('mainScreenContainer').classList.remove("hidden");
+    // document.getElementById('mainScreenContainer').classList.remove("hidden");
 })();
