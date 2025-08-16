@@ -5,7 +5,7 @@
   "manifest_version": 3,
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "assets/extension-logo.png"
+    "default_icon": "assets/icon-green.png"
   },
   "permissions": [
     "declarativeNetRequest",
