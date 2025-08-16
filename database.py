@@ -209,6 +209,17 @@ def get_urls(group_id: int):
     return tuple(results)
 
 
+"""
+Obtains the leaderboard for the lowest points
+"""
+GET_WORST_LEADERBOARD_COMMAND = """SELECT username, MIN(points) as MIN_POINTS FROM users GROUP BY username ORDER BY MIN_POINTS ASC"""
+def get_worst_leaderboard():
+    with connect_database() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(GET_WORST_LEADERBOARD_COMMAND)
+            # Returns a list of tuples(username, points)
+            results = cursor.fetchall()
+
 
 # Table initialise functions
 def init_database():
