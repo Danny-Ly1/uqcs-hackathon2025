@@ -70,34 +70,34 @@ def create_group(id):
         # groupID = database.create_group()
         groupID = None
         assert(groupID)
-        # call update user group with id
+        # TODO: call update user group with id
         return make_response(jsonify({'groupId': groupID}), 200)
     except:
         return make_response(jsonify({'message': 'error updating user'}), 400)
 
 @app.route('/group/<int:id>/locked_in', methods=['GET'])
 def get_group_countdown(id):
-    return make_response(jsonify({'message': 'error updating user'}), 400)
+    return make_response(jsonify({'message': 'ERROR'}), 400)
 
 # Update group with locked_in count
 @app.route('/group/<int:id>/locked_in', methods=['POST'])
 def update_group_countdown(id):
-    return make_response(jsonify({'message': 'error updating user'}), 400)
+    return make_response(jsonify({'message': 'ERROR'}), 400)
 
-# Get rule
+# Get rule list
 @app.route('/groups/<int:id>/filter_list', methods=['GET'])
 def get_group_rulelist(id):
-    return make_response(jsonify({'message': 'error updating user'}), 400)
+    return make_response(jsonify({'message': 'ERROR'}), 400)
 
 # Add rule
 @app.route('/groups/<int:id>/filter_list', methods=['POST'])
 def create_group_rule(id):
-    return make_response(jsonify({'message': 'error updating user'}), 400)
+    return make_response(jsonify({'message': 'ERROR'}), 400)
 
 # Remove rule
 @app.route('/groups/<int:id>/filter_list/<int:ruleId>', methods=['DELETE'])
 def remove_group_rule(id, ruleId):
-    return make_response(jsonify({'message': 'error updating user'}), 400)
+    return make_response(jsonify({'message': 'ERROR'}), 400)
 
 """
 Usage: call access database when needing to change anything.
