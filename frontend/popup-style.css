@@ -17,6 +17,22 @@ body {
     text-align: center;
 }
 
+.powerDiv {
+    align-items: center;
+    align-self: center;
+    width: fit-content;
+    margin: 10px;
+}
+
+#powerButton {
+    width: 192px;
+    height: 192px;
+}
+
+#powerButton img {
+   width: 300%;
+}
+
 .input-row {
     display: flex;
     gap: 10px;
