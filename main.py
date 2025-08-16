@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, make_response
+from discord_webhook import DiscordWebhook, DiscordEmbed
 import psycopg2
 import time
 import database
@@ -157,17 +158,25 @@ def create_group_rule(id):
 def remove_group_rule(id, ruleId):
     return make_response(jsonify({'message': 'Error removing a rule from filter list'}), 400)
 
+#Sends JSON to discord
+def send_webhook(user: str, hook: str):
+    webhook = DiscordWebhook(url=hook)      
+    embed = DiscordEmbed(title="Blocked Site Access Attempt",
+    description= f"{user} went on a blocked website and lost X points. Lock innnnnnn",
+    color="00FF00") 
+
+    webhook.add_embed(embed)
+    webhook.execute()
+
 # User snitching
 @app.route('/groups/<int:id>/infraction', methods=['POST'])
 def alert_discord(id):
-    if False:
-        try:
-            data = request.get_json()
-            userID = data['userId']
-            return make_response(jsonify({'groupId': groupID}), 200)
-        except:
-            return make_response(jsonify({'message': 'Bad '}), 400)
-    return make_response(jsonify({'message': 'Unfinished'}), 501)
+    try:
+        hook, user = database.get_urls(id)
+        send_webhook(user, hook)
+        return make_response(jsonify({'username': user}), 200)
+    except:
+        return make_response(jsonify({'message': 'Bad '}), 400)
 
     
 
