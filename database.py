@@ -193,3 +193,22 @@ ADD_GROUP_COMMAND = """INSERT INTO groups (links) VALUES (%s) RETURNING groupID"
 def add_group():
     results = execute_command(ADD_GROUP_COMMAND, ([],), True)
     return results
+
+"""
+Set epoch time in the db
+"""
+SET_EPOCH_TIME_COMMAND = """INSERT INTO Groups (epoch_time, lock_in) VALUES (%s, True) WHERE groupID = %s"""
+def set_lock_in(groupID: int, epoch_time: int):
+    pass
+
+"""
+Obtain epoch time and lock in state
+"""
+def get_lock_in():
+    pass
+
+"""
+Update lock in state and epoch timer
+"""
+def update_lock_in():
+    pass
