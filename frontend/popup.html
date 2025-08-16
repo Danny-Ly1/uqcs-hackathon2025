@@ -25,6 +25,7 @@
             </button>
         </div>
     </div>
+
     <div id="filterScreenContainer" class="hidden">
         <div class="returnButtonDiv">
             <button id="returnButton">
@@ -38,13 +39,14 @@
         <div id="suggestions" class="suggestions-box"></div>
         <ul id="siteList"></ul>
     </div>
+
     <div id="userDetailsContainer" class="hidden">
         <div class="loginScreenContainer">
             <div class="userDetails">
-                <h1 class="detailsHeader">WELCOME BACK</h1>
-                <input id="usernameInput" type="text" placeholder="Username">
-                <input id="passwordInput" type="password" placeholder="Password">
-                <div class="loginAndNewUserButtons">
+                <h1>WELCOME BACK</h1>
+                <input class="bigTextbox" type="text" placeholder="Username">
+                <input class="bigTextbox" type="password" placeholder="Password">
+                <div class="bigGreenBtnDiv">
                     <button id="loginButton">
                         <img id="loginButtonImg" src="assets/loginbutton.png">
                     </button>
@@ -54,19 +56,36 @@
         <h1 id="centreMePls">New to Squadlock?</h1>
         <div class="newUserScreenContainer">
             <div class="userDetails">
-                <h1 class="detailsHeader">CREATE ACCOUNT</h1>
-                <input id="usernameInput" type="text" placeholder="Username">
-                <input id="passwordInput" type="password" placeholder="Password">
-                <div class="loginAndNewUserButtons">
+                <h1>CREATE ACCOUNT</h1>
+                <input class="bigTextbox" type="text" placeholder="Username">
+                <input class="bigTextbox" type="password" placeholder="Password">
+                <div class="bigGreenBtnDiv">
                     <button id="newUserButton">
                         <img id="newUserButtonImg" src="assets/newuserbutton.png">
                     </button>
                 </div>
             </div>
-            
         </div>
     </div>
-    
+
+    <div id="groupDetailsContainer" class="hidden">
+        <h1>JOIN A GROUP</h1>
+        <input class="bigTextbox" type="text" placeholder="Group ID">
+        <div class="bigGreenBtnDiv">
+            <button id="loginButton">
+                <!-- <img id="loginButtonImg" src="assets/loginbutton.png"> -->
+                 Join Group <!-- TODO: PLACEHOLDER BUTTON -->
+            </button>
+        </div>
+
+        <h1 id="centreMePls">No group ID?</h1>
+        <div class="bigGreenBtnDiv">
+            <button id="newUserButton">
+                <!-- <img id="newUserButtonImg" src="assets/newuserbutton.png"> -->
+                New Group <!-- TODO: PLACEHOLDER BUTTON -->
+            </button>
+        </div>
+    </div>
 
     <script type="module" src="js/popup.js"></script>
 </body>
