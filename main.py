@@ -138,10 +138,8 @@ def update_group_countdown(id):
 @app.route('/groups/<int:id>/filter_list', methods=['GET'])
 def get_group_rulelist(id):
     try:
-        (groupID, urls) = database.get_urls(id)
-        # print(f"groupID: {groupID}")
-        # print(f"urls: {urls}")
-        return make_response(jsonify({urls}, 200))
+        result = database.get_urls(id)
+        return make_response(jsonify({result}, 200))
     except:
         return make_response(jsonify({'message': 'Error getting group filter list'}), 400)
 
