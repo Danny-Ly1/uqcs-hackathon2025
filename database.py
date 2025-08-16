@@ -15,15 +15,19 @@ FILTER_DUP_URL = """UPDATE groups SET links = (SELECT array_agg(DISTINCT l ORDER
 CLEAR_URL_ARRAY = """UPDATE groups SET links = %s WHERE groupid = %s"""
 CHECK_VALID_URL = """SELECT COUNT(*) FROM groups, unnest(links) AS element WHERE element = %s AND groupid = %s """
 
-REDUCE_SCORE = """UPDATE users SET score = score - %s WHERE userid = %s"""
-SET_SCORE = """UPDATE users SET score = %s WHERE userid = %s"""
+REDUCE_SCORE = """UPDATE users SET points = points - %s WHERE userid = %s"""
+SET_SCORE = """UPDATE users SET points = %s WHERE userid = %s"""
+
+SET_WEBHOOK = """UPDATE groups SET webhookurl = %s WHERE groupid = %s"""
+GET_WEBHOOK = """SELECT webhookurl FROM groups WHERE groupid = %s"""
 
 INIT_USER_TABLE = """CREATE TABLE IF NOT EXISTS users (
                     userid SERIAL PRIMARY KEY,
                     groupid INT,
                     username VARCHAR(50) UNIQUE,
                     password VARCHAR(30),
-                    points INT DEFAULT 100
+                    points INT DEFAULT 100,
+                    webhookurl TEXT
                     )
                     """
 
@@ -142,8 +146,8 @@ def reduce_score(user_id: int):
 """
 Sets new score for user
 """
-def set_score(user_id: int, score: int):
-    execute_command(SET_SCORE, (score, user_id), False)
+def set_score(user_id: int, points: int):
+    execute_command(SET_SCORE, (points, user_id), False)
 
 """
 Updates the groupID for the user
@@ -223,3 +227,8 @@ REMOVE_LOCK_COMMAND = """UPDATE Groups SET lockedin = false WHERE groupID = %s""
 def remove_lock(groupid):
     execute_command(REMOVE_LOCK_COMMAND, (groupid, ), False)
 
+def set_webhook(webhook: str, groupid):
+  execute_command(ADD_WEBHOOK, (webhook, groupid), False);
+
+def get_webhook(groupid):
+  execute_command(GET_WEBHOOK, (groupid, ), False);
