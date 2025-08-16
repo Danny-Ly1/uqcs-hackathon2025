@@ -43,3 +43,10 @@ chrome.alarms.onAlarm.addListener(async alarm => {
 
     throw new Error('Unknown Chrome alarm fired');
 });
+
+chrome.runtime.onInstalled.addListener(({ reason }) => {
+    if (reason === 'install') {
+        // Initialise store on extension install
+        store.refreshCache();
+    }
+});
