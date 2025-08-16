@@ -27,6 +27,32 @@ body {
     align-items: center;
     text-align: center;
 }
+.userDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;                 /* space between fields */
+    width: 100%;
+    max-width: 400px;          /* keeps it from stretching too wide */
+    padding: 20px;             /* spacing inside the box */
+    background: white;         /* fill the box with white */
+    border-radius: 12px;       /* rounded corners */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* subtle shadow */
+    box-sizing: border-box;
+    margin: 0 auto;            /* center horizontally */
+    font-family: "Press Start 2P", sans-serif;
+}
+
+#usernameInput,
+#passwordInput {
+    width: 100%;   /* responsive to container */
+    height: 40px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+
 
 .powerDiv {
     display: flex;       /* enables flexbox */

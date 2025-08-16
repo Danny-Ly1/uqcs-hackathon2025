@@ -4,13 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="popup-style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Press+Start+2P&display=swap" rel="stylesheet">
     <title>Main Menu</title>
 </head>
 <body>
     <div class="squadLockLogo">
         <img src="assets/slwhitebg-removebg-preview(1).png" alt="SQUADLOCK" width="350px">
     </div>
-    <div id="mainScreenContainer">
+    <div id="mainScreenContainer" class="hidden">
         <div class="powerDiv">
             <button id="powerButton">
                 <img id="powerButtonImg" src="assets/Powerbutton-Red.png">
@@ -34,6 +37,13 @@
         </div>
         <div id="suggestions" class="suggestions-box"></div>
         <ul id="siteList"></ul>
+    </div>
+    <div class="loginScreenContainer">
+        <div class="userDetails">
+            <h1 class="detailsHeader">WELCOME BACK</h1>
+            <input id="usernameInput" type="text" placeholder="Username">
+            <input id="passwordInput" type="password" placeholder="Password">
+        </div>
     </div>
 
     <script type="module" src="js/popup.js"></script>
