@@ -108,8 +108,7 @@ const render = async () => {
             // render home screen
             makeInvisibleById('groupDetailsContainer');
             makeInvisibleById('userDetailsContainer');
-            makeInvisibleById('filterScreenContainer');
-            makeVisibleById('mainScreenContainer');
+            navigateToHomescreenPage();
             return renderHomeScreen();
         }
 
@@ -164,6 +163,9 @@ const renderHomeScreen = async () => {
         startCountdown(lockInState.unlockTimeEpoch * 1000);
         makeInvisibleById('filterButtonDiv');
         makeInvisibleById('selectorDiv');
+
+        activeHomescreenPage = 'mainScreenContainer';
+        navigateToHomescreenPage();
     } else {
         makeVisibleById('filterButtonDiv');
         makeVisibleById('selectorDiv');
@@ -225,14 +227,25 @@ const handlePowerBtnClick = async () => {
     await render();
 }
 
+let activeHomescreenPage = 'mainScreenContainer'
 function handleFilterButton() {
-    document.getElementById('mainScreenContainer').classList.add("hidden");
-    document.getElementById('filterScreenContainer').classList.remove("hidden");
+    activeHomescreenPage = 'filterScreenContainer';
+    navigateToHomescreenPage();
 }
 
 function handleReturnButton() {
-    document.getElementById('filterScreenContainer').classList.add("hidden");
-    document.getElementById('mainScreenContainer').classList.remove("hidden");
+    activeHomescreenPage = 'mainScreenContainer';
+    navigateToHomescreenPage();
+}
+
+const navigateToHomescreenPage = () => {
+    if (activeHomescreenPage === 'mainScreenContainer') {
+        makeInvisibleById('filterScreenContainer');
+        makeVisibleById('mainScreenContainer')
+    } else if (activeHomescreenPage === 'filterScreenContainer') {
+        makeInvisibleById('mainScreenContainer');
+        makeVisibleById('filterScreenContainer');
+    }
 }
 
 document.getElementById("addSite").addEventListener("click", handleAddSiteBtnClick);
