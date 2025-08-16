@@ -1,6 +1,6 @@
 'use strict'
 
-import { SW_MESSAGE_TYPES } from "./constants.js";
+import { SW_MESSAGE_TYPES, API_ENDPOINT } from "./constants.js";
 
 const cache = {};
 
@@ -9,13 +9,16 @@ export const refreshCache = async () => {
     const browserStore = await chrome.storage.local.get();
 
     // Initialise the storageCache if the required key doesn't exist
-    if (!browserStore.filterList || !browserStore.lockInState) {
+    if (browserStore.filterList === undefined
+        || browserStore.lockInState === undefined
+        || browserStore.user === undefined) {
         console.log('Extension local storage uninitialised, initialising...');
 
         await chrome.storage.local.clear();
 
         cache.filterList = [];
         cache.lockInState = {lockedIn: false, unlockTimeEpoch: 0};
+        cache.user = {id: null, username: null, groupId: null};
 
         await chrome.storage.local.set(cache);
 
@@ -29,6 +32,52 @@ export const refreshCache = async () => {
 // filter: {id: number (greater than 0, integer), url: string}
 // filterList: filter[]
 // lockedInState: {lockedIn: boolean, unlockTimeEpoch: number (epoch second of unlock time)}
+// user: {id: number, username: string, groupId: number}
+
+// Returns boolean, whether user is logged in
+export const isLoggedIn = async () => {
+    await refreshCache();
+
+    return (cache.user.id !== null) && (cache.user.username !== null);
+}
+
+// Returns boolean, whether user is in a group
+export const isInGroup = async () => {
+    await refreshCache();
+
+    return cache.user.groupId !== null;
+}
+
+// Send credentials to server, update store and returns true if successful, returns false otherwise
+export const attemptLoginOrRegister = async (username, password, register) => {
+    await refreshCache();
+
+    cache.user = {id: null, username: null, groupId: null};
+    await chrome.storage.local.set(cache);
+
+    let resp;
+    try {
+        resp = await fetch(register ? `${API_ENDPOINT}/user` : `${API_ENDPOINT}/user/login`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({username, password})
+        });
+    } catch (err) {
+        console.log("Request error occurred:", err);
+    }
+    if (resp?.ok) {
+        resp = await resp.json();
+        cache.user.id = resp.id;
+        cache.user.username = resp.username;
+        await chrome.storage.local.set(cache);
+
+        return true;
+    }
+
+    return false;
+}
 
 // id of filterList object shall be provided
 export const removeFilterById = async (filterId) => {
