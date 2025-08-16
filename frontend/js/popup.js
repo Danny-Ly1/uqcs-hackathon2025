@@ -323,7 +323,7 @@ const startCountdown = (endEpochMs) => {
         const minutes = Math.floor((delta % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((delta % (1000 * 60)) / 1000);
 
-        timerElement.textContent = `${hours}:${minutes}:${seconds}`;
+        timerElement.textContent = `${String(hours).padStart(2, 0)}:${String(minutes).padStart(2, 0)}:${String(seconds).padStart(2, 0)}`;
         makeVisibleById('timerDiv');
     }, 191);
 }
