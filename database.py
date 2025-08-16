@@ -8,6 +8,36 @@ PORT = '5432'
 
 GROUP_ID_INDEX=3
 
+GET_GROUP_ID = """SELECT groupid FROM users WHERE userid = %s"""
+APPEND_URL = """UPDATE groups SET links = ARRAY_APPEND(links, %s) WHERE groupid = %s"""
+FILTER_DUP_URL = """UPDATE groups SET links = (SELECT array_agg(DISTINCT l ORDER BY l) FROM unnest(links) as l)"""
+
+CLEAR_URL_ARRAY = """UPDATE groups SET links = %s WHERE groupid = %s"""
+CHECK_VALID_URL = """SELECT COUNT(*) FROM groups, unnest(links) AS element WHERE element = %s AND groupid = %s """
+
+REDUCE_SCORE = """UPDATE users SET score = score - %s WHERE userid = %s"""
+SET_SCORE = """UPDATE users SET score = %s WHERE userid = %s"""
+
+INIT_USER_TABLE = """CREATE TABLE IF NOT EXISTS users (
+                    userid SERIAL PRIMARY KEY,
+                    groupid INT,
+                    username VARCHAR(50) UNIQUE,
+                    password VARCHAR(30),
+                    points INT DEFAULT 100
+                    )
+                    """
+
+INIT_GROUP_TABLE = """
+                    CREATE TABLE IF NOT EXISTS groups (
+                    groupid SERIAL PRIMARY KEY,
+                    links TEXT[])
+                    """
+
+DROP_TABLE = """
+            DROP TABLE users;
+            DROP TABLE groups;
+            """
+
 """
 Creates connection to database
 """
@@ -21,25 +51,28 @@ def connect_database():
     )
     return conn
 
-
 # Helper function to check db
 def get_all():
     with connect_database() as conn:
         with conn.cursor() as cursor:
-            cursor.execute("""SELECT * FROM users""")
+            # cursor.execute("""SELECT * FROM users WHERE username = 'bob'""")
+            cursor.execute("""SELECT * FROM groups""")
             return cursor.fetchall()
         
 # Helper function to execute SQL commands
 def execute_command(query: str, args: tuple[str], returning: bool):
     with connect_database() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute(query, args)
-            results = cursor.fetchone()
-            if returning:
-                if results == None:
-                    return "SOMETHING WENT VERY WRONG/DOES NOT EXIST"
-                return results
-            conn.commit()
+        try: 
+            with conn.cursor() as cursor:
+                cursor.execute(query, args)
+                if returning:
+                    results = cursor.fetchone()
+                    if results == None:
+                        return "SOMETHING WENT VERY WRONG/DOES NOT EXIST"
+                    return results
+                conn.commit()
+        except psycopg2.ProgrammingError as e:
+            print(f"Database returned error: {e}, aborting...")
 
 
 """
@@ -65,79 +98,44 @@ def url_trimmer(url: str) -> str:
 Add new blocked url
 """
 def add_blocked_url(user_id: int, url: str):
-    with connect_database() as conn:
-        cur = conn.cursor()
-        cur.execute("""SELECT groupid FROM users WHERE userid = %s""", (user_id, ))
-        group_id = cur.fetchall()[0] # extract value  
-        
-        url = url_trimmer(url)
-        cur.execute("""UPDATE groups SET links = ARRAY_APPEND(links, %s) WHERE groupid = %s""", (url, group_id))
-        cur.execute("""UPDATE groups SET links = (SELECT array_agg(DISTINCT l ORDER BY l) FROM unnest(links) as l)            
-        """) # remove duplicates each pass. Case sensitive, typo sensitive
-        conn.commit()
+    group_id = execute_command(GET_GROUP_ID, (user_id, ), True)
+    trimmed = url_trimmer(url)
+    execute_command(APPEND_URL, (trimmed, group_id), False)
+    execute_command(FILTER_DUP_URL, (trimmed, group_id), False)
 
-    conn.close()
 
 """
 Clears array of blocked urls
 """
 def clear_url_all(user_id: int):
-    with connect_database() as conn:
-        cur = conn.cursor()
-        cur.execute("""SELECT groupID FROM users WHERE userID = %s""", (user_id, ))
-        group_id = cur.fetchall()[0]
-        
-        cur.execute("""UPDATE groups SET links = %s WHERE groupid = %s""", ([], group_id)) # Clear tuple
-        conn.commit()
-
-    conn.close()
+    group_id = execute_command(GET_GROUP_ID, (user_id, ), True)
+    execute_command(CLEAR_URL_ARRAY, ([], group_id), False)
 
 """
 Check if url is in blocklist
 """
 def check_url(user_id, url: str):
-    trimmed = url_trimmer(url)
+    trimmed = url_trimmer(url) 
+    group_id = execute_command(GET_GROUP_ID, (user_id, ), True)
+    valid_url = execute_command(CHECK_VALID_URL, (trimmed, group_id), True)
+    if valid_url:
+        print("block ts")
+    else:
+        print("not blocked")
 
-    with connect_database() as conn:
-        cur = conn.cursor()
-        
-        cur.execute("""SELECT groupID FROM users WHERE userID = %s""", (user_id, ))
-        group_id = cur.fetchall()[0][0]
-        cur.execute("""SELECT COUNT(*) FROM groups, unnest(links) AS element
-                    WHERE element = %s AND groupid = %s """, (trimmed, group_id))
-        count = cur.fetchall()[0][0]
-        if count > 0:
-            print("block ts")
-        else:
-            print("not blocked")
-    conn.close()
 
 """
 Reduces score of user
 """
 def reduce_score(user_id: int):
     REDUCTION_AMOUNT = 10
-    with connect_database() as conn:
-
-        cur = conn.cursor()
-        cur.execute("""
-            UPDATE users SET score = score - %s WHERE userid = %s""", (REDUCTION_AMOUNT, user_id))
-        
-    conn.commit()
-    conn.close()
+    execute_command(REDUCE_SCORE, (REDUCTION_AMOUNT, user_id), False)
 
 """
 Sets new score for user
 """
 def set_score(user_id: int, score: int):
-    with connect_database() as conn:
-
-        cur = conn.cursor()
-        cur.execute("""
-            UPDATE users SET score = %s WHERE userid = %s""", (score, user_id))
-        
-    conn.commit()
-    conn.close()
+    execute_command(SET_SCORE, (score, user_id), False)
 
 """
 Updates the groupID for the user
@@ -152,37 +150,11 @@ def updateGroupID(user_id: int, group_id: int):
 Creates new tables required
 """
 def init_database():
-    with connect_database() as conn:
-
-        cur = conn.cursor()
-        cur.execute("""
-                    CREATE TABLE IF NOT EXISTS users (
-                    userid SERIAL PRIMARY KEY,
-                    groupid INT,
-                    name VARCHAR(50) UNIQUE,
-                    points INT DEFAULT 100
-                    )
-                    """)
-        cur.execute("""
-                    CREATE TABLE IF NOT EXISTS groups (
-                    groupid SERIAL PRIMARY KEY,
-                    links TEXT[])
-                    """)
-
-    conn.commit()
-    conn.close()
+    execute_command(INIT_USER_TABLE, None, False)
+    execute_command(INIT_GROUP_TABLE, None, False)
 
 def drop_database():
-    with connect_database() as conn:
-
-        cur = conn.cursor()
-        cur.execute("""
-                    DROP TABLE users;
-                    DROP TABLE groups;
-                    """)
-        
-    conn.commit()
-    conn.close()
+    execute_command(DROP_TABLE, None, False)
 
 """
 Adds a user to the database
