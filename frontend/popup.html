@@ -19,7 +19,22 @@
                 <img id="powerButtonImg" src="assets/Powerbutton-Red.png">
             </button>
         </div>
-        <div class="filterButtonDiv">
+        <div class="timerDiv" id="timerDiv" class="hidden">
+            <h2 id="timer"></h2>
+        </div>
+        <div class="selectorDiv" id="selectorDiv">
+            <h3>Lock-in Timer: </h3>
+            <select id="pomodoroSelectorSeconds">
+                <option value="600">10 mins</option>
+                <option value="1200" selected>20 mins</option>
+                <option value="1800">30 mins</option>
+                <option value="2400">40 mins</option>
+                <option value="3000">50 mins</option>
+                <option value="3600">60 mins</option>
+                <option value="60">1 min</option>
+            </select>
+        </div>
+        <div class="filterButtonDiv" id="filterButtonDiv">
             <button id="filterButton">
                 <img id="filterButtonImg" src="assets/Filterbutton.png">
             </button>

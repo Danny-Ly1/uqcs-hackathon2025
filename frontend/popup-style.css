@@ -14,7 +14,16 @@ body {
 }
 
 .hidden {
-    display: none; 
+    display: none;
+    visibility: hidden;
+}
+
+.selectorDiv h3 {
+    font-family: "Press Start 2P", sans-serif;
+}
+
+#timer {
+    font-family: "Press Start 2P", sans-serif;
 }
 
 #centreMePls {
@@ -38,7 +47,9 @@ body {
 .bigGreenBtnDiv,
 .powerDiv,
 .filterButtonDiv,
-.returnButtonDiv {
+.returnButtonDiv,
+.selectorDiv,
+.timerDiv {
     display: flex;
     justify-content: center;
     align-items: center;
