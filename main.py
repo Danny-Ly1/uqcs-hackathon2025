@@ -205,7 +205,7 @@ def alert_discord(id, infraction):
         return make_response(jsonify({'message': 'Bad '}), 400)
 
 # Giving users points
-@app.route('/users/<int:id>/addpoints', method=['POST'])
+@app.route('/users/<int:id>/addpoints', methods=['POST'])
 def gain_points(id):
     try:
         data = request.get_json()
@@ -218,7 +218,7 @@ def gain_points(id):
 
 # Showing leaderboard for lowest number of points
 # Haven't tested and isn't required to be implemented
-@app.route('/users/<int:id>/leaderboard', method=['POST'])
+@app.route('/users/<int:id>/leaderboard', methods=['POST'])
 def show_leaderboard():
     try:
         results = database.get_worst_leaderboard()
