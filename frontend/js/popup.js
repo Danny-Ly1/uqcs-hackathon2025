@@ -22,6 +22,7 @@ const newGroupBtn = document.getElementById('newGroupBtn');
 
 const timerElement = document.getElementById('timer');
 const pomodoroSelector = document.getElementById('pomodoroSelectorSeconds');
+const groupIdText = document.getElementById('groupIdText');
 
 // Common sites for suggestion
 // Should all be lowercase for comparison against user input
@@ -170,6 +171,9 @@ const renderHomeScreen = async () => {
         makeVisibleById('filterButtonDiv');
         makeVisibleById('selectorDiv');
     }
+
+    // Render group ID
+    groupIdText.textContent = `Group ID: ${(await store.getGroupId())}`
 }
 
 // Handle siteInputTextbox input events to show suggestions as you type

@@ -48,6 +48,13 @@ export const isInGroup = async () => {
     return cache.user.groupId !== null;
 }
 
+// Returns stored user groupId, may be null
+export const getGroupId = async () => {
+    await refreshCache();
+
+    return cache.user.groupId;
+}
+
 // Send credentials to server, update store and returns true if successful, returns false otherwise
 export const attemptLoginOrRegister = async (username, password, register) => {
     await refreshCache();
