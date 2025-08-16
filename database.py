@@ -18,15 +18,16 @@ CHECK_VALID_URL = """SELECT COUNT(*) FROM groups, unnest(links) AS element WHERE
 REDUCE_POINTS = """UPDATE users SET points = points - %s WHERE userid = %s"""
 SET_POINTS = """UPDATE users SET points = %s WHERE userid = %s"""
 
-SET_WEBHOOK = """UPDATE groups SET webhookurl = %s WHERE groupid = %s"""
-GET_WEBHOOK = """SELECT webhookurl FROM users WHERE userid = %s"""
+SET_WEBHOOK = """UPDATE users SET webhookurl = %s WHERE userid = %s"""
+GET_WEBHOOK = """SELECT username, webhookurl FROM users WHERE userid = %s"""
 
 INIT_USER_TABLE = """CREATE TABLE IF NOT EXISTS users (
                     userid SERIAL PRIMARY KEY,
                     groupid INT,
                     username VARCHAR(50) UNIQUE,
                     password VARCHAR(30),
-                    points INT DEFAULT 100
+                    points INT DEFAULT 100,
+                    webhookurl TEXT
                     )
                     """
 
@@ -39,9 +40,16 @@ INIT_GROUP_TABLE = """
                     )
                     """
 
+INIT_FILTER_TABLE = """
+                    CREATE TABLE IF NOT EXISTS filters
+                    linkid SERIAL PRIMARY KEY,
+                    url TEXT,
+                    groupid INT"""
+
 DROP_TABLE = """
             DROP TABLE users;
             DROP TABLE groups;
+            DROP TABLE filters;
             """
 
 """
@@ -105,13 +113,16 @@ def url_trimmer(url: str) -> str:
 """
 Add new blocked url
 """
-def add_blocked_url(user_id: int, url: str):
-    group_id = execute_command(GET_GROUP_ID, (user_id, ), True)
-    trimmed = url_trimmer(url)
-    if not trimmed:
-      print("URL not supported, abandoning addition")
-    execute_command(APPEND_URL, (trimmed, group_id), False)
-    execute_command(FILTER_DUP_URL, (trimmed, group_id), False)
+
+ADD_URL_COMMAND = """INSERT INTO filters (url, groupid) VALUES (%s, %s) RETURNING linkid"""
+def add_blocked_url(url: str, group_id: int):
+    link_id = execute_command(ADD_URL_COMMAND, (url, group_id), True)
+    return url, link_id
+
+
+DELETE_URL_COMMAND = """DELETE FROM filters WHERE linkid = %s"""
+def clear_one_url(link_id: int):
+    execute_command(DELETE_URL_COMMAND, (link_id,), False)
 
 
 """
@@ -164,6 +175,7 @@ Creates new tables required
 def init_database():
     execute_command(INIT_USER_TABLE, None, False)
     execute_command(INIT_GROUP_TABLE, None, False)
+    execute_command(INIT_FILTER_TABLE, None, False)
 
 def drop_database():
     execute_command(DROP_TABLE, None, False)
@@ -226,11 +238,11 @@ REMOVE_LOCK_COMMAND = """UPDATE Groups SET elapsedtime = 0 WHERE groupID = %s"""
 def remove_lock(groupid):
     execute_command(REMOVE_LOCK_COMMAND, (groupid, ), False)
 
-def set_webhook(webhook: str, groupid):
-  execute_command(SET_WEBHOOK, (webhook, groupid), False)
+def set_webhook(webhook: str, userid):
+  execute_command(SET_WEBHOOK, (webhook, userid), False)
 
 def get_webhook(userid):
-  execute_command(GET_WEBHOOK, (userid, ), False)
+    return execute_command(GET_WEBHOOK, (userid,), True)
 
 
 GET_URL_COMMAND = """SELECT groupid, links FROM Groups WHERE groupid = %s"""
