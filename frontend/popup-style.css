@@ -1,4 +1,6 @@
-/* Fixed popup size */
+/* =======================
+   Popup Base Styles
+======================= */
 body {
     display: flex;
     flex-direction: column;
@@ -12,121 +14,84 @@ body {
 }
 
 .hidden {
-    display: none;
+    display: none; 
 }
 
+#centreMePls {
+    align-self: center;
+    font-family: "Press Start 2P", sans-serif;
+}
+
+/* =======================
+   Logo
+======================= */
 .squadLockLogo {
     width: 80%;
     align-self: center;
     text-align: center;
-    align-items: center;
     justify-content: center;
 }
 
-.mainScreenContainer {
-    align-items: center;
-    text-align: center;
-}
-.userDetails {
+/* =======================
+   Login Screen
+======================= */
+.loginAndNewUserButtons,
+.powerDiv,
+.filterButtonDiv,
+.returnButtonDiv {
     display: flex;
-    flex-direction: column;
-    gap: 10px;                 /* space between fields */
+    justify-content: center;
+    align-items: center;
     width: 100%;
-    max-width: 400px;          /* keeps it from stretching too wide */
-    padding: 20px;             /* spacing inside the box */
-    background: white;         /* fill the box with white */
-    border-radius: 12px;       /* rounded corners */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* subtle shadow */
+    margin: 10px 0;
+}
+
+#userDetailsContainer {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     box-sizing: border-box;
-    margin: 0 auto;            /* center horizontally */
+    margin: 0 auto;
     font-family: "Press Start 2P", sans-serif;
 }
 
 #usernameInput,
 #passwordInput {
-    width: 100%;   /* responsive to container */
+    width: 100%;
     height: 40px;
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 6px;
     box-sizing: border-box;
-}
-
-.loginAndNewUserButtons {
-    display: flex;       /* enables flexbox */
-    justify-content: center; /* centers horizontally */
-    align-items: center; /* centers vertically if height is set */
-    width: 100%;         /* span full width of popup */
-    margin: 10px 0;
+    margin-bottom: 12px; /* 👈 adds gap between inputs */
 }
 
 
-#loginButton, #newUserButton {
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-}
-
-#loginButton img, #newUserButton img {
-    width: 80%;
-}
-
-#loginButton img:hover, #newUserButton img:hover{
-    filter: brightness(85%); /* 100% is normal brightness */
-}
-
-
-.powerDiv {
-    display: flex;       /* enables flexbox */
-    justify-content: center; /* centers horizontally */
-    align-items: center; /* centers vertically if height is set */
-    width: 100%;         /* span full width of popup */
-    margin: 10px 0;
-}
-
-
-#powerButton {
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    
-}
-
-.filterButtonDiv {
-    display: flex;       /* enables flexbox */
-    justify-content: center; /* centers horizontally */
-    align-items: center; /* centers vertically if height is set */
-    width: 100%;         /* span full width of popup */
-    margin: 2px 0;
-}
-
-
-#filterButton {
-    background: none;
-    border: none;
-    padding: 10px;
-    cursor: pointer;
-}
-
-#filterButton img {
+/* =======================
+   Buttons & Images
+======================= */
+#loginButton img,
+#newUserButton img {
     width: 35%;
 }
 
-#filterButton img:hover {
-    filter: brightness(85%); /* 100% is normal brightness */
+#loginButton img:hover,
+#newUserButton img:hover,
+#powerButton img:hover,
+#filterButton img:hover,
+#returnButton img:hover {
+    filter: brightness(85%);
 }
 
-.returnButtonDiv {
-    display: flex;       /* enables flexbox */
-    justify-content: center; /* centers horizontally */
-    align-items: center; /* centers vertically if height is set */
-    width: 100%;         /* span full width of popup */
-    margin: 10px 0;
-}
-
-
+#loginButton,
+#newUserButton,
+#powerButton,
+#filterButton,
 #returnButton {
     background: none;
     border: none;
@@ -134,48 +99,54 @@ body {
     cursor: pointer;
 }
 
-#returnButton img {
-    width: 35%;
-}
-
-#returnButton img:hover {
-    filter: brightness(85%); /* 100% is normal brightness */
-}
-
-#powerButton img:hover {
-    filter: brightness(85%); /* 100% is normal brightness */
-}
-
+/* Power Button */
 #powerButton img {
    display: block;
    width: 256px;
    height: 256px;
 }
 
+/* Filter & Return Buttons */
+#filterButton img,
+#returnButton img {
+    width: 35%;
+}
+
+/* =======================
+   Main Screen & Containers
+======================= */
+.mainScreenContainer {
+    align-items: center;
+    text-align: center;
+}
+
+/* =======================
+   Filter Screen
+======================= */
 .input-row {
     display: flex;
     gap: 10px;
     align-items: center;
     margin-bottom: 10px;
-    width: 100%; /* makes the row span full popup width */
-    box-sizing: border-box; /* ensures gap/padding is included in width */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #siteInput {
-    flex: 1;            /* makes input take all available space */
+    flex: 1;  /* takes available space */
 }
 
 #addSite {
-    flex: 0;            /* button keeps its natural size */
+    flex: 0;  /* natural button size */
 }
 
-/* Scrollable blocked sites list */
+/* Blocked Sites List */
 #siteList {
     list-style: none;
     padding: 0;
     margin: 10px 0;
-    max-height: 150px;   /* fixed height */
-    overflow-y: auto;    /* scrolls when overflow */
+    max-height: 150px;
+    overflow-y: auto;
     border: 1px solid #ccc;
     background: #fff;
 }
@@ -188,6 +159,7 @@ body {
     border-bottom: 1px solid #eee;
 }
 
+/* Suggestions Box */
 .suggestions-box {
     background: white;
     max-height: 150px;

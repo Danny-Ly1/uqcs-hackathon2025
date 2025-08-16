@@ -38,22 +38,35 @@
         <div id="suggestions" class="suggestions-box"></div>
         <ul id="siteList"></ul>
     </div>
-    <div class="loginScreenContainer">
-        <div class="userDetails">
-            <h1 class="detailsHeader">WELCOME BACK</h1>
-            <input id="usernameInput" type="text" placeholder="Username">
-            <input id="passwordInput" type="password" placeholder="Password">
-            <div class="loginAndNewUserButtons">
-                <button id="loginButton">
-                    <img id="loginButtonImg" src="assets/loginbutton.png">
-                </button>
-                <button id="newUserButton">
-                    <img id="newUserButtonImg" src="assets/newuserbutton.png">
-                </button>
+    <div id="userDetailsContainer" class="hidden">
+        <div class="loginScreenContainer">
+            <div class="userDetails">
+                <h1 class="detailsHeader">WELCOME BACK</h1>
+                <input id="usernameInput" type="text" placeholder="Username">
+                <input id="passwordInput" type="password" placeholder="Password">
+                <div class="loginAndNewUserButtons">
+                    <button id="loginButton">
+                        <img id="loginButtonImg" src="assets/loginbutton.png">
+                    </button>
+                </div>
             </div>
         </div>
-        
+        <h1 id="centreMePls">New to Squadlock?</h1>
+        <div class="newUserScreenContainer">
+            <div class="userDetails">
+                <h1 class="detailsHeader">CREATE ACCOUNT</h1>
+                <input id="usernameInput" type="text" placeholder="Username">
+                <input id="passwordInput" type="password" placeholder="Password">
+                <div class="loginAndNewUserButtons">
+                    <button id="newUserButton">
+                        <img id="newUserButtonImg" src="assets/newuserbutton.png">
+                    </button>
+                </div>
+            </div>
+            
+        </div>
     </div>
+    
 
     <script type="module" src="js/popup.js"></script>
 </body>
