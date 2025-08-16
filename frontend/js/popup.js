@@ -103,7 +103,7 @@ const render = async () => {
         removeBtn.style.cursor = "pointer";
         removeBtn.addEventListener("click", async (e) => {
             // Implement remove button logic
-            store.removeFilterById(filter.id);
+            await store.removeFilterById(filter.id);
             render();
             updateChromeBlocklist();
         });
