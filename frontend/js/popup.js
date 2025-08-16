@@ -11,6 +11,11 @@ const returnButton = document.getElementById("returnButton");
 const loginButton = document.getElementById("loginButton");
 const newUserButton = document.getElementById("newUserButton");
 
+const loginUsernameInputTextbox = document.getElementById("loginUsernameInput");
+const loginPasswordInputTextbox = document.getElementById("loginPasswordInput");
+const registerUsernameInputTextbox = document.getElementById("registerUsernameInput");
+const registerPasswordInputTextbox = document.getElementById("registerPasswordInput");
+
 // Common sites for suggestion
 // Should all be lowercase for comparison against user input
 const commonSites = [
@@ -87,8 +92,38 @@ const commonSites = [
     "popcrush.com"
 ];
 
-// Render filter list and button state
+const makeVisibleById = id => document.getElementById(id).classList.remove("hidden");
+const makeInvisibleById = id => document.getElementById(id).classList.add("hidden");
+
 const render = async () => {
+    if (await store.isLoggedIn()) {
+        if (await store.isInGroup()) {
+            // render home screen
+            makeInvisibleById('groupDetailsContainer');
+            makeInvisibleById('userDetailsContainer');
+            makeInvisibleById('filterScreenContainer');
+            makeVisibleById('mainScreenContainer');
+            return renderHomeScreen();
+        }
+
+        // render group on-boarding page
+        makeInvisibleById('mainScreenContainer');
+        makeInvisibleById('filterScreenContainer');
+        makeInvisibleById('userDetailsContainer');
+        makeVisibleById('groupDetailsContainer');
+        return;
+    }
+
+    // render user on-boarding page
+    makeInvisibleById('groupDetailsContainer');
+    makeInvisibleById('mainScreenContainer');
+    makeInvisibleById('filterScreenContainer');
+    makeVisibleById('userDetailsContainer');
+    return;
+}
+
+// Render filter list and button state
+const renderHomeScreen = async () => {
     // Render filter list
     siteList.innerHTML = "";
     (await store.getFilterList()).forEach(filter => {
@@ -186,20 +221,39 @@ function handleReturnButton() {
     document.getElementById('mainScreenContainer').classList.remove("hidden");
 }
 
-function justStartProgram() {
-    document.getElementById('userDetailsContainer').classList.add("hidden");
-    document.getElementById('mainScreenContainer').classList.remove("hidden");
-}
-
-
 document.getElementById("addSite").addEventListener("click", handleAddSiteBtnClick);
 powerButton.addEventListener("click", handlePowerBtnClick);
 filterButton.addEventListener("click", handleFilterButton);
 returnButton.addEventListener("click", handleReturnButton);
 
-// PLACEHOLDER FUNCTIONS FOR LOGIN AND NEW USER THINGIES
-loginButton.addEventListener("click", justStartProgram);
-newUserButton.addEventListener("click", justStartProgram);
+// User Details Page
+// attempt login
+async function handleLoginBtnClick (e) {
+    const res = await store.attemptLoginOrRegister(loginUsernameInputTextbox.value, loginPasswordInputTextbox.value, false);
+    if (res) {
+        console.log('DEBUG: is in group?', await store.isInGroup());
+        console.log('DEBUG: logged in?', await store.isLoggedIn());
+        await render();
+
+        return;
+    }
+}
+
+async function handleNewUserBtnClick (e) {
+    const res = await store.attemptLoginOrRegister(registerUsernameInputTextbox.value, registerPasswordInputTextbox.value, true);
+    if (res) {
+        console.log('DEBUG: is in group?', await store.isInGroup());
+        console.log('DEBUG: logged in?', await store.isLoggedIn());
+        await render();
+
+        return;
+    }
+}
+loginButton.addEventListener("click", handleLoginBtnClick);
+newUserButton.addEventListener("click", handleNewUserBtnClick);
+
+// Group Sign-on Page
+
 
 // Populates Chrome blacklist with list from storage cache
 const updateChromeBlocklist = async () => {
@@ -233,10 +287,8 @@ const updateChromeBlocklist = async () => {
 // Mainline
 (async () => {
     // Render page elements and update Chrome ruleset
-    render();
-    updateChromeBlocklist();
-
-    document.getElementById('userDetailsContainer').classList.remove("hidden");
+    await render();
+    await updateChromeBlocklist();
 })();
 
 chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
