@@ -4,6 +4,8 @@ import psycopg2
 import time
 import database
 
+from flask_sock import Sock
+
 import asyncio
 from websockets.asyncio.server import serve
 
@@ -15,6 +17,7 @@ PASSWORD = '1234'
 PORT = '5432'
 
 app = Flask(__name__)
+sock = Sock(app)
 
 @app.route('/')
 def hello_world():
@@ -139,7 +142,7 @@ def update_group_countdown(id):
 def get_group_rulelist(id):
     try:
         result = database.get_urls(id)
-        return make_response(jsonify({result}, 200))
+        return make_response(jsonify(result), 200)
     except:
         return make_response(jsonify({'message': 'Error getting group filter list'}), 400)
 
@@ -228,38 +231,13 @@ def show_leaderboard():
 
 
 """
-Usage: call access database when needing to change anything.
-
+Allow ping
 """
-def access_database():
-    conn = psycopg2.connect(
-        host=DATA_HOST,
-        database=DATABASE,
-        user=USER,
-        password=PASSWORD,
-        port=PORT
-    )
-    
-    cur = conn.cursor()
-    # Insert SQL between the """
-    # print("hello world")
-    cur.execute("""
-    SELECT * FROM USERS
-    """)
-    results = cur.fetchall() # Fetches all output from above query
-    # print(results)
-
-################ Server receive ping and send pong 
-async def echo(websocket):
-    async for message in websocket:
-        print(message)
-        await websocket.send("pong")
-
-async def main():
-    async with serve(echo, "10.89.76.206", 8765) as server:
-        await server.serve_forever()
+@sock.route("/ws")
+def ws(ws):
+    while True:
+        data = ws.receive()
+        ws.send(f"Echo from server: {data}")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
-    access_database()
-    asyncio.run(main())
