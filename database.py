@@ -9,10 +9,7 @@ PORT = '5432'
 GROUP_ID_INDEX=3
 
 GET_GROUP_ID = """SELECT groupid FROM users WHERE userid = %s"""
-APPEND_URL = """UPDATE groups SET links = ARRAY_APPEND(links, %s) WHERE groupid = %s"""
-FILTER_DUP_URL = """UPDATE groups SET links = (SELECT array_agg(DISTINCT l ORDER BY l) FROM unnest(links) as l)"""
 
-CLEAR_URL_ARRAY = """UPDATE groups SET links = %s WHERE groupid = %s"""
 CHECK_VALID_URL = """SELECT COUNT(*) FROM groups, unnest(links) AS element WHERE element = %s AND groupid = %s """
 
 REDUCE_POINTS = """UPDATE users SET points = points - %s WHERE userid = %s"""
@@ -34,7 +31,6 @@ INIT_USER_TABLE = """CREATE TABLE IF NOT EXISTS users (
 INIT_GROUP_TABLE = """
                     CREATE TABLE IF NOT EXISTS groups (
                     groupid SERIAL PRIMARY KEY,
-                    links TEXT[],
                     elapsedtime BIGINT DEFAULT 0,
                     webhookurl TEXT
                     )
@@ -52,6 +48,7 @@ DROP_TABLE = """
             DROP TABLE filters;
             """
 
+
 """
 Creates connection to database
 """
@@ -64,29 +61,6 @@ def connect_database():
         port=PORT
     )
     return conn
-
-# Helper function to check db
-def get_all():
-    with connect_database() as conn:
-        with conn.cursor() as cursor:
-            # cursor.execute("""SELECT * FROM users WHERE username = 'bob'""")
-            cursor.execute("""SELECT * FROM groups""")
-            return cursor.fetchall()
-        
-# Helper function to execute SQL commands
-def execute_command(query: str, args: tuple[str], returning: bool):
-    with connect_database() as conn:
-        try: 
-            with conn.cursor() as cursor:
-                cursor.execute(query, args)
-                if returning:
-                    results = cursor.fetchone()
-                    if results == None:
-                        return "SOMETHING WENT VERY WRONG/DOES NOT EXIST"
-                    return results
-                conn.commit()
-        except psycopg2.ProgrammingError as e:
-            print(f"Database returned error: {e}, aborting...")
 
 
 """
@@ -110,41 +84,22 @@ def url_trimmer(url: str) -> str:
       
     return url
 
+
 """
 Add new blocked url
 """
-
 ADD_URL_COMMAND = """INSERT INTO filters (url, groupid) VALUES (%s, %s) RETURNING linkid"""
 def add_blocked_url(url: str, group_id: int):
     link_id = execute_command(ADD_URL_COMMAND, (url, group_id), True)
     return url, link_id
 
 
+"""
+Delete URL from db
+"""
 DELETE_URL_COMMAND = """DELETE FROM filters WHERE linkid = %s"""
 def clear_one_url(link_id: int):
     execute_command(DELETE_URL_COMMAND, (link_id,), False)
-
-
-"""
-Clears array of blocked urls
-"""
-def clear_url_all(user_id: int):
-    group_id = execute_command(GET_GROUP_ID, (user_id, ), True)
-    execute_command(CLEAR_URL_ARRAY, ([], group_id), False)
-
-"""
-Check if url is in blocklist
-"""
-def check_url(user_id, url: str):
-    trimmed = url_trimmer(url) 
-    if not trimmed:
-      print("URL not supported, abandoning check")
-    group_id = execute_command(GET_GROUP_ID, (user_id, ), True)
-    valid_url = execute_command(CHECK_VALID_URL, (trimmed, group_id), True)
-    if valid_url:
-        print("block ts")
-    else:
-        print("not blocked")
 
 
 """
@@ -154,11 +109,13 @@ def reduce_points(user_id: int):
     REDUCTION_AMOUNT = 10
     execute_command(REDUCE_POINTS, (REDUCTION_AMOUNT, user_id), False)
 
+
 """
 Sets new points for user
 """
 def set_point(user_id: int, points: int):
     execute_command(SET_POINTS, (points, user_id), False)
+
 
 """
 Updates the groupID for the user
@@ -168,17 +125,6 @@ def updateGroupID(user_id: int, group_id: int):
     results = execute_command(UPDATE_GROUPID_COMMAND, (group_id, user_id), True)
     return results
 
-# Table setup functions
-"""
-Creates new tables required
-"""
-def init_database():
-    execute_command(INIT_USER_TABLE, None, False)
-    execute_command(INIT_GROUP_TABLE, None, False)
-    execute_command(INIT_FILTER_TABLE, None, False)
-
-def drop_database():
-    execute_command(DROP_TABLE, None, False)
 
 """
 Adds a user to the database
@@ -232,19 +178,27 @@ def check_lock(group_id):
     return lock
 
 """
-Update lock in state and epoch timer
+Remove lock
 """
 REMOVE_LOCK_COMMAND = """UPDATE Groups SET elapsedtime = 0 WHERE groupID = %s"""
 def remove_lock(groupid):
     execute_command(REMOVE_LOCK_COMMAND, (groupid, ), False)
-
+"""
+Insert webhook in the db
+"""
 def set_webhook(webhook: str, userid):
   execute_command(SET_WEBHOOK, (webhook, userid), False)
 
+"""
+Obtain the webhook from the db
+"""
 def get_webhook(userid):
     return execute_command(GET_WEBHOOK, (userid,), True)
 
 
+"""
+Obtain URL and groupID from db
+"""
 GET_URL_COMMAND = """SELECT groupid, links FROM Groups WHERE groupid = %s"""
 def get_urls(group_id: int):
     results = execute_command(GET_URL_COMMAND, (group_id,), True)
@@ -254,3 +208,39 @@ def get_urls(group_id: int):
 
     return tuple(results)
 
+
+
+# Table initialise functions
+def init_database():
+    execute_command(INIT_USER_TABLE, None, False)
+    execute_command(INIT_GROUP_TABLE, None, False)
+    execute_command(INIT_FILTER_TABLE, None, False)
+
+# Table drop function
+def drop_database():
+    execute_command(DROP_TABLE, None, False)
+
+
+
+# Helper function to check db and debug
+def get_all():
+    with connect_database() as conn:
+        with conn.cursor() as cursor:
+            # cursor.execute("""SELECT * FROM users WHERE username = 'bob'""")
+            cursor.execute("""SELECT * FROM groups""")
+            return cursor.fetchall()
+
+# Helper function to execute SQL commands
+def execute_command(query: str, args: tuple[str], returning: bool):
+    with connect_database() as conn:
+        try: 
+            with conn.cursor() as cursor:
+                cursor.execute(query, args)
+                if returning:
+                    results = cursor.fetchone()
+                    if results == None:
+                        return "SOMETHING WENT VERY WRONG/DOES NOT EXIST"
+                    return results
+                conn.commit()
+        except psycopg2.ProgrammingError as e:
+            print(f"Database returned error: {e}, aborting...")
