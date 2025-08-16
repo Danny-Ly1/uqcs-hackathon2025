@@ -160,7 +160,7 @@ def add_user(username: str, password: str) -> int:
 """
 Gets a user from the database
 """
-GET_USER_COMMAND = """SELECT userid, username, groupid FROM users WHERE userid = %s"""
+GET_USER_COMMAND = """SELECT userid, username, groupid, points FROM users WHERE userid = %s"""
 def get_user(userid: int):
     user_info = execute_command(GET_USER_COMMAND, (userid,), True)
     return user_info
