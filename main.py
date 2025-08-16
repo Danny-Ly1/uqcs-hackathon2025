@@ -38,14 +38,28 @@ def create_user():
     except:
         return make_response(jsonify({'message': 'Error creating user'}), 400)
 
+@app.route('/user/login', methods=['POST'])
+def check_for_user():
+    """
+    GET a user id (requires username and password)
+    """
+    try:
+        data = request.get_json()
+        username: str = data['username']
+        password: str = data['password']
+        # check both of these fields were specified
+        id = database.check_login(username, password)
+        return make_response(jsonify({'id': id, 'username': username}), 200)
+    except:
+        return make_response(jsonify({'message': 'Error logging into user'}), 400)
+
 @app.route('/users/<int:id>', methods=['GET'])
 def get_user(id):
     """
     GET a specific user, via their id
     """
     try:
-        # QUERY DATABASE FOR USER WHOSE ID MATCHES FUNCTION ARGUMENT
-        # (username, groupID) = database.query_specific_user(id)
+        # should already know user id
         (dummyid, username, groupID) = database.get_user(id)
         payload = None
         if not groupID:
@@ -63,9 +77,9 @@ def update_usergroup(id):
     """
     try:
         data = request.get_json()
-        groupID = int(data['groupId'])
-        # is_success = database.update_usergroup(groupID)
-        (groupID) = database.updateGroupID(id, groupID)
+        groupID = int(data['groupId'])  # TODO: check if this should be int or str
+        # should already know groupid
+        (dummyGroupID) = database.updateGroupID(id, groupID)
         return make_response(jsonify({'groupId': groupID}), 200)
     except:
         return make_response(jsonify({'message': 'Error updating user'}), 400)
@@ -80,42 +94,69 @@ def create_group():
         data = request.get_json()
         userID = data['initialUserId']
         groupID = database.add_group()
-        # TODO: call update user group with id
+        # Add initial user as first member of group
+        database.updateGroupID(userID, groupID)
         return make_response(jsonify({'groupId': groupID}), 200)
     except:
         return make_response(jsonify({'message': 'Error creating group'}), 400)
 
+# BIGGER TODO: FIX THIS TAKING USER ID AND NOT GROUPID
 # Get the group countdown from a user's id
 @app.route('/group/<int:id>/locked_in', methods=['GET'])
 def get_group_countdown(id):
-    try:
-        # TODO: something funky is going on
-        (locked_in, unlock_time_epoch) = database.check_lock(id)
-        return make_response(jsonify({'locked_in': locked_in,
-        'unlock_time_epoch': unlock_time_epoch}), 200)
-    except:
-        return make_response(jsonify({'message': 'Error getting group locked in state'}), 400)
+    if False:
+        try:
+            # TODO: something funky is going on
+            (locked_in, unlock_time_epoch) = database.check_lock(id)
+            return make_response(jsonify({'locked_in': locked_in,
+            'unlock_time_epoch': unlock_time_epoch}), 200)
+        except:
+            return make_response(jsonify({'message': 'Error getting group locked in state'}), 400)
+    return make_response(jsonify({'message': 'Unfinished'}), 501)
 
 # Update group with locked_in count
 @app.route('/group/<int:id>/locked_in', methods=['POST'])
 def update_group_countdown(id):
-    # TODO: logic for calculating future epoch
-    return make_response(jsonify({'message': 'Error updating group locked in state'}), 400)
+    if False:
+        # TODO: logic for calculating future epoch
+        return make_response(jsonify({'message': 'Error updating group locked in state'}), 400)
+    return make_response(jsonify({'message': 'Unfinished'}), 501)
 
 # Get rule list
 @app.route('/groups/<int:id>/filter_list', methods=['GET'])
 def get_group_rulelist(id):
-    return make_response(jsonify({'message': 'Error getting group filter list'}), 400)
+    try:
+        (groupID, urls) = database.get_urls(id)
+        print(f"groupID: {groupID}")
+        print(f"urls: {urls}")
+        return make_response(jsonify({urls}, 200))
+    except:
+        return make_response(jsonify({'message': 'Error getting group filter list'}), 400)
 
 # Add rule
 @app.route('/groups/<int:id>/filter_list', methods=['POST'])
 def create_group_rule(id):
+    data = request.get_json()
     return make_response(jsonify({'message': 'Error adding a rule to filter list'}), 400)
 
 # Remove rule
 @app.route('/groups/<int:id>/filter_list/<int:ruleId>', methods=['DELETE'])
 def remove_group_rule(id, ruleId):
     return make_response(jsonify({'message': 'Error removing a rule from filter list'}), 400)
+
+# User snitching
+@app.route('/groups/<int:id>/infraction', methods=['POST'])
+def alert_discord(id):
+    if False:
+        try:
+            data = request.get_json()
+            userID = data['userId']
+            return make_response(jsonify({'groupId': groupID}), 200)
+        except:
+            return make_response(jsonify({'message': 'Bad '}), 400)
+    return make_response(jsonify({'message': 'Unfinished'}), 501)
+
+    
 
 """
 Usage: call access database when needing to change anything.
@@ -134,7 +175,7 @@ def access_database():
     # Insert SQL between the """
     print("hello world")
     cur.execute("""
-    SELECT * FROM groups
+    SELECT * FROM USERS
     """)
     results = cur.fetchall() # Fetches all output from above query
     print(results)
