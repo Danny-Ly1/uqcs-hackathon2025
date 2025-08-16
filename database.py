@@ -19,15 +19,14 @@ REDUCE_POINTS = """UPDATE users SET points = points - %s WHERE userid = %s"""
 SET_POINTS = """UPDATE users SET points = %s WHERE userid = %s"""
 
 SET_WEBHOOK = """UPDATE groups SET webhookurl = %s WHERE groupid = %s"""
-GET_WEBHOOK = """SELECT webhookurl FROM groups WHERE groupid = %s"""
+GET_WEBHOOK = """SELECT webhookurl FROM users WHERE userid = %s"""
 
 INIT_USER_TABLE = """CREATE TABLE IF NOT EXISTS users (
                     userid SERIAL PRIMARY KEY,
                     groupid INT,
                     username VARCHAR(50) UNIQUE,
                     password VARCHAR(30),
-                    points INT DEFAULT 100,
-                    webhookurl TEXT
+                    points INT DEFAULT 100
                     )
                     """
 
@@ -35,7 +34,8 @@ INIT_GROUP_TABLE = """
                     CREATE TABLE IF NOT EXISTS groups (
                     groupid SERIAL PRIMARY KEY,
                     links TEXT[],
-                    elapsedtime BIGINT
+                    elapsedtime BIGINT DEFAULT 0,
+                    webhookurl TEXT
                     )
                     """
 
@@ -203,35 +203,34 @@ def add_group():
 """
 Set epoch time in the db
 """
-SET_EPOCH_TIME_COMMAND = """UPDATE Groups SET elapsedtime = %s, lockedin = true WHERE groupID = %s"""
+SET_EPOCH_TIME_COMMAND = """UPDATE Groups SET elapsedtime = %s WHERE groupID = %s"""
+GET_UPDATE_TIME = """SELECT elapsedtime FROM groups WHERE groupid = %s"""
 def set_lock_in(groupID: int, epoch_time: int):
-    execute_command(SET_EPOCH_TIME_COMMAND, (epoch_time, groupID), False)
+    execute_command(SET_EPOCH_TIME_COMMAND, (epoch_time, groupID), True)
+    result = execute_command(GET_UPDATE_TIME, (groupID, ), True)
+    return result
 
 """
 Obtain epoch time and lock in state
 """
-GET_LOCK_STATUS = """SELECT lockedin FROM groups WHERE groupid = %s"""
-def check_lock(userid):
-    group_id = execute_command(GET_GROUP_ID, (userid, ), True)
-    lock = execute_command(GET_LOCK_STATUS, (group_id, ), True)[0]
-    print(lock)
-    if lock == True:
-        print("GETOUT")
-    else:
-        print("go ahead")
+GET_LOCK_STATUS = """SELECT elapsedtime FROM groups WHERE groupid = %s"""
+def check_lock(group_id):
+    # group_id = execute_command(GET_GROUP_ID, (userid, ), True)
+    lock = execute_command(GET_LOCK_STATUS, (group_id, ), True)
+    return lock
 
 """
 Update lock in state and epoch timer
 """
-REMOVE_LOCK_COMMAND = """UPDATE Groups SET lockedin = false WHERE groupID = %s"""
+REMOVE_LOCK_COMMAND = """UPDATE Groups SET elapsedtime = 0 WHERE groupID = %s"""
 def remove_lock(groupid):
     execute_command(REMOVE_LOCK_COMMAND, (groupid, ), False)
 
 def set_webhook(webhook: str, groupid):
-  execute_command(ADD_WEBHOOK, (webhook, groupid), False);
+  execute_command(SET_WEBHOOK, (webhook, groupid), False)
 
-def get_webhook(groupid):
-  execute_command(GET_WEBHOOK, (groupid, ), False);
+def get_webhook(userid):
+  execute_command(GET_WEBHOOK, (userid, ), False)
 
 
 GET_URL_COMMAND = """SELECT groupid, links FROM Groups WHERE groupid = %s"""
@@ -242,3 +241,4 @@ def get_urls(group_id: int):
         results[1] = []
 
     return tuple(results)
+
