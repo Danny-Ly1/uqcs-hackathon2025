@@ -12,14 +12,17 @@ GROUP_ID_INDEX=3
 Creates connection to database
 """
 def connect_database():
-    conn = psycopg2.connect(
-        host=DATA_HOST,
-        database=DATABASE,
-        user=USER,
-        password=PASSWORD,
-        port=PORT
-    )
-    return conn
+    try: 
+        conn = psycopg2.connect(
+            host=DATA_HOST,
+            database=DATABASE,
+            user=USER,
+            password=PASSWORD,
+            port=PORT
+        )
+        return conn
+    except psycopg2.Error as e:
+        print(f"Failed connection: {e}, aborting...")
 
 
 """
@@ -38,7 +41,9 @@ def url_trimmer(url: str) -> str:
         url = url[www_index:org_index]
     elif net_index:
         url = url[www_index:net_index]
-
+    else:
+        return ""
+        
     return url
 
 """
@@ -62,34 +67,42 @@ def add_blocked_url(user_id: int, url: str):
 Clears array of blocked urls
 """
 def clear_url_all(user_id: int):
-    with connect_database() as conn:
+    try:
         cur = conn.cursor()
         cur.execute("""SELECT groupID FROM users WHERE userID = %s""", (user_id, ))
-        group_id = cur.fetchall()[0]
+        group_id = cur.fetchall()
         
-        cur.execute("""UPDATE groups SET links = %s WHERE groupid = %s""", ([], group_id)) # Clear tuple
+        cur.execute("""UPDATE groups SET links = %s WHERE groupid = %s""", ([], group_id[0])) # Clear tuple
         conn.commit()
-
-    conn.close()
+    except psycopg2.ProgrammingError as e:
+        print(f"Database error: {e}, aborting...")
 
 """
 Check if url is in blocklist
 """
 def check_url(user_id, url: str):
     trimmed = url_trimmer(url)
-
+    if len(trimmed) == 0:
+        print("URL domain name not supported, abandoning check...")
+        return
+    
     with connect_database() as conn:
-        cur = conn.cursor()
-        
-        cur.execute("""SELECT groupID FROM users WHERE userID = %s""", (user_id, ))
-        group_id = cur.fetchall()[0][0]
-        cur.execute("""SELECT COUNT(*) FROM groups, unnest(links) AS element
-                    WHERE element = %s AND groupid = %s """, (trimmed, group_id))
-        count = cur.fetchall()[0][0]
-        if count > 0:
-            print("block ts")
-        else:
-            print("not blocked")
+        try: 
+            cur = conn.cursor()
+            cur.execute("""SELECT groupID FROM users WHERE userID = %s""", (user_id, ))
+            group_id = cur.fetchall()[0][0]
+            cur.execute("""
+                        SELECT COUNT(*)
+                        FROM groups, unnest(links) AS element
+                        WHERE element = %s AND groupid = %s
+                    """, (trimmed, group_id))
+            count = cur.fetchall()[0][0]
+            if count > 0:
+                print("block ts")
+            else:
+                print("not blocked")
+        except psycopg2.ProgrammingError as e:
+            print(f"Database error: {e}, aborting...")
     conn.close()
 
 """
