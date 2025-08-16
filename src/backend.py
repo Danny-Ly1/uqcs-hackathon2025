@@ -223,4 +223,5 @@ def ws(ws):
         ws.send(f"Echo from server: {data}")
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    database.init_database()
+    app.run(host=DATA_HOST, port=5001, debug=True)
