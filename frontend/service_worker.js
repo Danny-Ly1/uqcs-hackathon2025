@@ -1,6 +1,6 @@
 'use strict'
 
-// SW is responsible for
+// SW is responsible for (some of these did not come into fruition lmfao)
 // - heartbeat to keep the extension active 24/7
 // - lockedinstate updates from server
 //      - client side lockedinstate transitions after timer elapse
@@ -57,6 +57,7 @@ let socketKeepaliveInterval = null;
 async function handleSocketOpen(e) {
     socket.send('ping');
 
+    // Keep alive 15s on a websocket to prevent the worker from being killed
     socketKeepaliveInterval = setInterval(() => {
         socket.send('ping');
     }, 15*1000);
@@ -87,4 +88,22 @@ const socketConnect = () => {
     socket.addEventListener('error', handleSocketError);
     socket.addEventListener('message', handleSocketMessage);
 }
-socketConnect();
+
+// Mainline of SW
+(async () => {
+    socketConnect();
+    setInterval(async () => {
+        try {
+            if ((await store.isInGroup()) && (await store.isLoggedIn)) {
+                await Promise.all([store.pullServerLockInState(),
+                    store.pullFilterList(),
+                    store.updateChromeBlocklist()
+                ]);
+                await chrome.runtime.sendMessage({type: SW_MESSAGE_TYPES.CS_STORE_CHANGED});
+            }
+        } catch (_e) {
+            // "error handling", you say? what's what?
+        }
+    }, 2000);
+})();
+
