@@ -206,6 +206,18 @@ def alert_discord(id, infraction):
     except:
         return make_response(jsonify({'message': 'Bad '}), 400)
 
+# Giving users points
+@app.route('/users/<int:id>/addpoints', method=['POST'])
+def gain_points(id):
+    try:
+        data = request.get_json()
+        user_id = data['userID']
+        database.reduce_points(user_id, -50)
+        return make_response(jsonify(), 204)
+    except:
+        return make_response(jsonify({'message': 'Bad '}), 400)
+
+
 """
 Usage: call access database when needing to change anything.
 
