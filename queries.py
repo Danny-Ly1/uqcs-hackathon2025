@@ -1,4 +1,6 @@
+# Replace this IP with your own LAN IP for hosting multiple connections
 DATA_HOST = '10.89.76.206'
+# DATA_HOST = 'localhost'
 DATABASE = 'postgres'
 USER = 'postgres'
 PASSWORD = '1234'
@@ -11,11 +13,12 @@ GET_USER_COMMAND = """SELECT userid, username, groupid, points FROM users WHERE 
 
 GET_GROUP_ID = """SELECT groupid FROM users WHERE userid = %s"""
 UPDATE_GROUPID_COMMAND = """UPDATE Users SET groupID = %s WHERE userID = %s RETURNING groupID"""
-ADD_GROUP_COMMAND = """INSERT INTO groups (links) VALUES (%s) RETURNING groupID"""
+ADD_GROUP_COMMAND = """INSERT INTO groups (elapsedtime) VALUES (0) RETURNING groupID"""
+CHECK_GROUP_ID = """SELECT groupid FROM groups WHERE groupid = %s"""
 
 ADD_URL_COMMAND = """INSERT INTO filters (url, groupid) VALUES (%s, %s) RETURNING linkid"""
 DELETE_URL_COMMAND = """DELETE FROM filters WHERE linkid = %s"""
-CHECK_VALID_URL = """SELECT COUNT(*) FROM groups, unnest(links) AS element WHERE element = %s AND groupid = %s """
+CHECK_VALID_URL = """SELECT url, COUNT(*) AS url_count FROM filters WHERE groupid = %s GROUP BY groupid"""
 GET_URL_COMMAND = """SELECT linkid, url FROM filters WHERE groupid = %s"""
 
 REDUCE_POINTS = """UPDATE users SET points = points - %s WHERE userid = %s"""
@@ -53,14 +56,15 @@ INIT_GROUP_TABLE = """
                     """
 
 INIT_FILTER_TABLE = """
-                    CREATE TABLE IF NOT EXISTS filters
+                    CREATE TABLE IF NOT EXISTS filters (
                     linkid SERIAL PRIMARY KEY,
-                    url TEXT UNIQUE,
+                    url TEXT,
                     groupid INT
+                    )
                     """
 
 DROP_TABLE = """
-            DROP TABLE users;
-            DROP TABLE groups;
-            DROP TABLE filters;
+            DROP TABLE users CASCADE;
+            DROP TABLE groups CASCADE;
+            DROP TABLE filters CASCADE;
             """
