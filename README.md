@@ -1,8 +1,9 @@
-# uqcs-hackathon2025
+# SquadLock
 SquadLock is aimed to prevent distracting side quests
 ## Features
 - Join your friends/organisation and take down that deadline
 - See who stays disciplined by not trying to visit blocked websites through point tracking
+- Shames your friends through Discord messages whenever they are caught lacking
 - Create personalised block targets and reduce distracting background thoughts
 - Balance work and leisure through blocked out time periods
 
@@ -46,13 +47,13 @@ WS_ENDPOINT = 'ws://LANIP:5001';
 FILEPATH: src/queries.py
 DATA_HOST = 'LANIP'
 ```
-2. Navigate to your browser, and type into your search bar:
+4. Navigate to your browser, and type into your search bar:
    ```chrome://extensions```
-3. 
+5. 
    - Enable the **Developer Mode** switch at the top right corner. 
    - A **Load Unpacked** icon should appear. 
    - Click into it, and upload the **frontend** directory.
-4. The extension is now installed.
+6. The extension is now installed.
 
 
 ### <a name="postgres-setup">Postgres Server Setup:</a>
@@ -77,7 +78,11 @@ Keep the port as 5432, and enter password 1234.
 
 
 ### <a name="library-install">Library Installation:</a>
-
-
-
+The following libraries are required to run the server:
+```javascript
+pip install flask
+pip install flask-sock
+pip install discord-webhook
+pip install psycopg2
+```
 
