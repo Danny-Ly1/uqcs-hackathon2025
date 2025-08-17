@@ -81,6 +81,8 @@ def update_usergroup(id):
         data = request.get_json()
         groupID = int(data['groupId'])
         exist = database.group_exists(groupID)
+        if (exist == 0):
+            return make_response(jsonify({'message': 'Group id does not exist'}), 400)
         # should already know groupid
         (dummyGroupID) = database.updateGroupID(id, groupID)
         return make_response(jsonify({'groupId': groupID}), 200)
@@ -140,7 +142,7 @@ def create_group_rule(id):
         url = data['url']
         duplicate = database.url_duplicate_yes(id, url)
         
-        if (duplicate):
+        if (duplicate > 1):
             return make_response(jsonify({'message': 'Duplicate found'}), 400)
         
         results = database.add_blocked_url(url, id)
@@ -172,7 +174,7 @@ def send_webhook(user: str, hook: str, infraction: int):
     if infraction == 2:
         embed = DiscordEmbed(title="Blocked Site Access Attempt",
         description= f"{user} quit early and lost 50 points. Next time, LOCK IN!",
-        color="000000") 
+        color="FFFFFF") 
         embed.set_image("https://external-content.duckduckgo.com/iu/?u=" \
         "https%3A%2F%2Fi.imgflip.com%2F740194.png&f=1&nofb=1&ipt=6" \
         "270529088328ceb3d3f9d2fd94a97ceb4ada92d2e86e584241c0d8352c6e9fe")
@@ -185,26 +187,17 @@ def alert_discord(id):
     try:
         data = request.get_json()
         user_id = data['userId']
-        hook = database.get_webhook(id)
-
-        if (hook is not None):
-            send_webhook(hook[0], hook[1], 1)
         database.reduce_points(user_id, 10)
-        return make_response(jsonify(), 204)
-    except:
-        return make_response(jsonify({'message': 'Bad '}), 400)
-    
-# User snitching
-@app.route('/groups/<int:id>/infraction-big', methods=['POST'])
-def alert_discord(id):
-    try:
-        data = request.get_json()
-        user_id = data['userId']
-        hook = database.get_webhook(id)
+        # hook = database.get_webhook(id)
 
-        if (hook is not None):
-            send_webhook(hook[0], hook[1], 2)
-        database.reduce_points(user_id, 50)
+        # if (hook is not None):
+        #     send_webhook(hook[0], hook[1], infraction)
+
+        # if infraction == 1:
+        #     database.reduce_points(user_id, 10)
+        # else:
+        #     database.reduce_points(user_id, 50)
+
         return make_response(jsonify(), 204)
     except:
         return make_response(jsonify({'message': 'Bad '}), 400)
