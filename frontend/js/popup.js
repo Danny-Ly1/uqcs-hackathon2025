@@ -1,4 +1,4 @@
-import { SW_MESSAGE_TYPES } from './lib/constants.js';
+import { SW_MESSAGE_TYPES, API_ENDPOINT } from './lib/constants.js';
 import * as store from './lib/store.js';
 
 const siteInputTextbox = document.getElementById("siteInput");
@@ -24,6 +24,7 @@ const pointsDisplay = document.getElementById('pointsDisplay');
 const timerElement = document.getElementById('timer');
 const pomodoroSelector = document.getElementById('pomodoroSelectorSeconds');
 const groupIdText = document.getElementById('groupIdText');
+const ldbrdBtn = document.getElementById('ldbrdBtn');
 
 // Common sites for suggestion
 // Should all be lowercase for comparison against user input
@@ -206,6 +207,21 @@ const provideSuggestions = async (e) => {
 }
 
 siteInputTextbox.addEventListener("input", provideSuggestions);
+
+// Send leaderboard webhook reuqest
+ldbrdBtn.addEventListener('mousedown', async (_e) => {
+    try {
+        await fetch(`${API_ENDPOINT}/users/${await store.getUserId()}/leaderboard`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({userID: (await store.getUserId()), ligma: "Vs lbh'er ernqvat guvf, lbh'er n areq"})
+        });
+    } catch (err) {
+        // lol
+    }
+})
 
 // Add site button logic
 const handleAddSiteBtnClick = async (e) => {
