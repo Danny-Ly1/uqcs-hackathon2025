@@ -14,11 +14,11 @@ GET_USER_COMMAND = """SELECT userid, username, groupid, points FROM users WHERE 
 GET_GROUP_ID = """SELECT groupid FROM users WHERE userid = %s"""
 UPDATE_GROUPID_COMMAND = """UPDATE Users SET groupID = %s WHERE userID = %s RETURNING groupID"""
 ADD_GROUP_COMMAND = """INSERT INTO groups (elapsedtime) VALUES (0) RETURNING groupID"""
-CHECK_GROUP_ID = """SELECT groupid FROM groups WHERE groupid = %s"""
+CHECK_GROUP_ID = """SELECT COUNT(groupid) FROM groups WHERE groupid = %s"""
 
 ADD_URL_COMMAND = """INSERT INTO filters (url, groupid) VALUES (%s, %s) RETURNING linkid"""
 DELETE_URL_COMMAND = """DELETE FROM filters WHERE linkid = %s"""
-CHECK_VALID_URL = """SELECT url, COUNT(*) AS url_count FROM filters WHERE groupid = %s GROUP BY groupid"""
+CHECK_VALID_URL = """SELECT COUNT(*) FROM filters WHERE groupid = %s AND url = %s"""
 GET_URL_COMMAND = """SELECT linkid, url FROM filters WHERE groupid = %s"""
 
 REDUCE_POINTS = """UPDATE users SET points = points - %s WHERE userid = %s"""
