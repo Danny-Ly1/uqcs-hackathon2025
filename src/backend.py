@@ -160,10 +160,36 @@ def remove_group_rule(id, ruleId):
     except:
         return make_response(jsonify({'message': 'Error removing a rule from filter list'}), 400)
 
+def send_leaderboard(data):
+    webhook = DiscordWebhook(url=HOOK)
+    leaderboard_data = [
+    {"player": data[0][0], "score": data[0][1], "rank_emoji": "🥇"},
+    {"player": data[1][0], "score": data[1][1], "rank_emoji": "🥈"},
+    {"player": data[2][0], "score": data[2][1], "rank_emoji": "🥉"},
+    {"player": data[3][0], "score": data[3][1], "rank_emoji": "4."},
+    {"player": data[4][0], "score": data[4][1], "rank_emoji": "5."},
+    ]
+
+    embed = DiscordEmbed(
+        title="SquadLock Wall of Shame",
+        description="Least locked in users",
+        color="00FF00"
+    )
+
+    for entry in leaderboard_data:
+        embed.add_embed_field(
+            name=f"{entry['rank_emoji']} {entry['player']}",
+            value=f"Score: {entry['score']:,}",
+            inline=True 
+        )
+    embed.set_timestamp()
+
+    webhook.add_embed(embed)
+    webhook.execute()
 
 #Sends JSON to discord
 def send_webhook(user: str, user_id: int, url: str, infraction: int):
-    webhook = DiscordWebhook(url=HOOK)
+    webhook = DiscordWebhook(url=HOOK, username="SquadLock")
     (dummyid, username, groupID, points) = database.get_user(user_id) # should already know user id
     if infraction == 1:
         embed = DiscordEmbed(title="Blocked Site Access Attempt",
@@ -231,9 +257,10 @@ def gain_points(id):
 # Showing leaderboard for lowest number of points
 # Haven't tested and isn't required to be implemented
 @app.route('/users/<int:id>/leaderboard', methods=['POST'])
-def show_leaderboard():
+def show_leaderboard(id):
     try:
         results = database.get_worst_leaderboard()
+        send_leaderboard(results)
         return make_response(jsonify({'leaderboard': results}), 200)
     except:
         return make_response(jsonify({'message': 'Bad '}), 400)
