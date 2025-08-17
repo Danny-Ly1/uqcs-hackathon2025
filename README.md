@@ -44,7 +44,7 @@ DATA_HOST = 'localhost'
 ![alt text](image.png)
 2. From here, right click into server, then follow the path below.\
 
-![alt text](image-1.png)
+![alt text](image1.png)
 3. Give your new server any name, and specify the connection in host name/address. If you want to host only locally, insert 127.0.0.1. 
 > [!IMPORTANT]
 > Ensure your IP addresses previously configured back in step 2 of [Installation](#localhost-installation) is the same as the one inserted into Postgres
@@ -57,7 +57,7 @@ Keep the port as 5432, and enter password 1234.
 > FILEPATH: src/queries.py
 > PASSWORD: YOURPASSWORD (default: '1234')
 
-![alt text](image-2.png)
+![alt text](image2.png)
 
 
 ### <a name="library-install">Library Installation:</a>
