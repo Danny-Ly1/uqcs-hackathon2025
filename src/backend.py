@@ -161,7 +161,7 @@ def remove_group_rule(id, ruleId):
         return make_response(jsonify({'message': 'Error removing a rule from filter list'}), 400)
 
 def send_leaderboard(data):
-    webhook = DiscordWebhook(url=HOOK)
+    webhook = DiscordWebhook(url=HOOK, username="SquadLock", avatar_url="https://i.imgur.com/4YEj07l.png")
     leaderboard_data = [
     {"player": data[0][0], "score": data[0][1], "rank_emoji": "🥇"},
     {"player": data[1][0], "score": data[1][1], "rank_emoji": "🥈"},
@@ -189,7 +189,7 @@ def send_leaderboard(data):
 
 #Sends JSON to discord
 def send_webhook(user: str, user_id: int, url: str, infraction: int):
-    webhook = DiscordWebhook(url=HOOK, username="SquadLock")
+    webhook = DiscordWebhook(url=HOOK, username="SquadLock", avatar_url="https://i.imgur.com/4YEj07l.png")
     (dummyid, username, groupID, points) = database.get_user(user_id) # should already know user id
     if infraction == 1:
         embed = DiscordEmbed(title="Blocked Site Access Attempt",
