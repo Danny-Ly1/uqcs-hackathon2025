@@ -162,13 +162,19 @@ def remove_group_rule(id, ruleId):
 
 def send_leaderboard(data):
     webhook = DiscordWebhook(url=HOOK, username="SquadLock", avatar_url="https://i.imgur.com/4YEj07l.png")
-    leaderboard_data = [
-    {"player": data[0][0], "score": data[0][1], "rank_emoji": "🥇"},
-    {"player": data[1][0], "score": data[1][1], "rank_emoji": "🥈"},
-    {"player": data[2][0], "score": data[2][1], "rank_emoji": "🥉"},
-    {"player": data[3][0], "score": data[3][1], "rank_emoji": "4."},
-    {"player": data[4][0], "score": data[4][1], "rank_emoji": "5."},
-    ]
+    leadersize = len(data)
+    leaderboard_data = []
+
+    for i in range(leadersize):
+        leaderboard_data.append({"player": data[i][0], "score": data[i][1], "rank": f"{i + 1}."})
+    
+    # leaderboard_data = [
+    # {"player": data[0][0], "score": data[0][1], "rank_emoji": "🥇"},
+    # {"player": data[1][0], "score": data[1][1], "rank_emoji": "🥈"},
+    # {"player": data[2][0], "score": data[2][1], "rank_emoji": "🥉"},
+    # {"player": data[3][0], "score": data[3][1], "rank_emoji": "4."},
+    # {"player": data[4][0], "score": data[4][1], "rank_emoji": "5."},
+    # ]
 
     embed = DiscordEmbed(
         title="SquadLock Wall of Shame",
@@ -178,7 +184,7 @@ def send_leaderboard(data):
 
     for entry in leaderboard_data:
         embed.add_embed_field(
-            name=f"{entry['rank_emoji']} {entry['player']}",
+            name=f"{entry['rank']} {entry['player']}",
             value=f"Score: {entry['score']:,}",
             inline=True 
         )
@@ -258,6 +264,9 @@ def gain_points(id):
 # Haven't tested and isn't required to be implemented
 @app.route('/users/<int:id>/leaderboard', methods=['POST'])
 def show_leaderboard(id):
+    results = database.get_worst_leaderboard()
+    send_leaderboard(results)
+    return make_response(jsonify({'leaderboard': results}), 200)
     try:
         results = database.get_worst_leaderboard()
         send_leaderboard(results)
