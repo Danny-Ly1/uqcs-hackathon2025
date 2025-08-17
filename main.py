@@ -172,7 +172,7 @@ def send_webhook(user: str, hook: str, infraction: int):
     if infraction == 2:
         embed = DiscordEmbed(title="Blocked Site Access Attempt",
         description= f"{user} quit early and lost 50 points. Next time, LOCK IN!",
-        color="FFFFFF") 
+        color="000000") 
         embed.set_image("https://external-content.duckduckgo.com/iu/?u=" \
         "https%3A%2F%2Fi.imgflip.com%2F740194.png&f=1&nofb=1&ipt=6" \
         "270529088328ceb3d3f9d2fd94a97ceb4ada92d2e86e584241c0d8352c6e9fe")
@@ -185,7 +185,6 @@ def alert_discord(id):
     try:
         data = request.get_json()
         user_id = data['userId']
-        database.reduce_points(user_id, 10)
         hook = database.get_webhook(id)
 
         if (hook is not None):
@@ -201,7 +200,6 @@ def alert_discord(id):
     try:
         data = request.get_json()
         user_id = data['userId']
-        database.reduce_points(user_id, 10)
         hook = database.get_webhook(id)
 
         if (hook is not None):
