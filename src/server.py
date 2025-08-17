@@ -167,14 +167,6 @@ def send_leaderboard(data):
 
     for i in range(leadersize):
         leaderboard_data.append({"player": data[i][0], "score": data[i][1], "rank": f"{i + 1}."})
-    
-    # leaderboard_data = [
-    # {"player": data[0][0], "score": data[0][1], "rank_emoji": "🥇"},
-    # {"player": data[1][0], "score": data[1][1], "rank_emoji": "🥈"},
-    # {"player": data[2][0], "score": data[2][1], "rank_emoji": "🥉"},
-    # {"player": data[3][0], "score": data[3][1], "rank_emoji": "4."},
-    # {"player": data[4][0], "score": data[4][1], "rank_emoji": "5."},
-    # ]
 
     embed = DiscordEmbed(
         title="SquadLock Wall of Shame",
@@ -223,8 +215,6 @@ def alert_discord(id):
         url = data['offending_url']
         hook = database.get_webhook(user_id)
 
-        # if (hook is not None):
-        #     send_webhook(hook[0], hook[1], 1) # later
         database.reduce_points(user_id, 10)
         send_webhook(hook[0], user_id, url, 1)
 
@@ -240,8 +230,6 @@ def alert_discord_big(id):
         user_id = data['userID']
         hook = database.get_webhook(user_id)
 
-        # if (hook is not None):
-        #     send_webhook(hook[0], hook[1], 1) # later
         database.reduce_points(50, user_id)
         send_webhook(hook[0], user_id, 2)
 
@@ -261,18 +249,11 @@ def gain_points(id):
         return make_response(jsonify({'message': 'Bad '}), 400)
 
 # Showing leaderboard for lowest number of points
-# Haven't tested and isn't required to be implemented
 @app.route('/users/<int:id>/leaderboard', methods=['POST'])
 def show_leaderboard(id):
     results = database.get_worst_leaderboard()
     send_leaderboard(results)
     return make_response(jsonify({'leaderboard': results}), 200)
-    try:
-        results = database.get_worst_leaderboard()
-        send_leaderboard(results)
-        return make_response(jsonify({'leaderboard': results}), 200)
-    except:
-        return make_response(jsonify({'message': 'Bad '}), 400)
 
 """
 Allow ping
