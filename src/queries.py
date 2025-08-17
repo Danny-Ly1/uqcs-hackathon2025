@@ -70,4 +70,3 @@ DROP_TABLE = """
             """
 
 HOOK = "https://discord.com/api/webhooks/1406113072531374241/g5Gd8iFqBFHBiDUy9e0sliUi6JJv4_XErx6emn451AuB_PjtnqZS2bs2cq3Ak6BCPMvf"
-
