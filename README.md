@@ -1,5 +1,5 @@
 # uqcs-hackathon2025
-[project name] aimed to prevent distracting side quests
+SquadLock is aimed to prevent distracting side quests
 ## Features
 - Join your friends/organisation and take down that deadline
 - See who stays disciplined by not trying to visit blocked websites through point tracking
@@ -29,13 +29,30 @@ WS_ENDPOINT = 'ws://localhost:5001';
 FILEPATH: src/queries.py
 DATA_HOST = 'localhost'
 ```
-1. Navigate to your browser, and type into your search bar:
+
+### <a name="lan-anchor"></a>LAN installation
+1. Download latest release, extract, and check required [libraries](#library-installation) are installed.
+2. Find your LAN IP by opening Command Prompt (Terminal on MacOS), and run ```ipconfig```. Locate the 
+```Wireless LAN adapter Wi-Fi``` header, and copy paste the IPv4 address.
+![alt text](image-3.png)
+
+3. Please uncomment the variables located in the following filepaths.
+   (These constants come set for private LAN hosting).
+```javascript
+FILEPATH: frontend/js/lib/constants.js
+API_ENDPOINT = 'http://LANIP:5001';
+WS_ENDPOINT = 'ws://LANIP:5001';
+
+FILEPATH: src/queries.py
+DATA_HOST = 'LANIP'
+```
+2. Navigate to your browser, and type into your search bar:
    ```chrome://extensions```
-2. 
+3. 
    - Enable the **Developer Mode** switch at the top right corner. 
    - A **Load Unpacked** icon should appear. 
    - Click into it, and upload the **frontend** directory.
-3. The extension is now installed.
+4. The extension is now installed.
 
 
 ### <a name="postgres-setup">Postgres Server Setup:</a>
@@ -56,7 +73,6 @@ Keep the port as 5432, and enter password 1234.
 > ```javascript
 > FILEPATH: src/queries.py
 > PASSWORD: YOURPASSWORD (default: '1234')
-
 ![alt text](image-2.png)
 
 
