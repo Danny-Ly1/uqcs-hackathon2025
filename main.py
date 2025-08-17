@@ -75,11 +75,12 @@ def get_user(id):
 @app.route('/users/<int:id>/group', methods=['POST'])
 def update_usergroup(id):
     """
-    Update a user's groupId
+    Update a user's groupId aka joining a group
     """
     try:
         data = request.get_json()
         groupID = int(data['groupId'])
+        exist = database.group_exists(groupID)
         # should already know groupid
         (dummyGroupID) = database.updateGroupID(id, groupID)
         return make_response(jsonify({'groupId': groupID}), 200)
@@ -137,9 +138,13 @@ def create_group_rule(id):
     try:
         data = request.get_json()
         url = data['url']
+        duplicate = database.url_duplicate_yes(id, url)
+        
+        if (duplicate):
+            return make_response(jsonify({'message': 'Duplicate found'}), 400)
+        
         results = database.add_blocked_url(url, id)
         url, linkid = results
-        print(url, linkid[0])
         return make_response(jsonify({'id': linkid[0], 'url': url}), 200)
     except:
         return make_response(jsonify({'message': 'Error adding a rule to filter list'}), 400)
@@ -176,17 +181,20 @@ def send_webhook(user: str, hook: str, infraction: int):
 
 # User snitching
 @app.route('/groups/<int:id>/infraction', methods=['POST'])
-def alert_discord(id, infraction):
+def alert_discord(id):
     try:
-        data = database.get_webhook(id)
-        send_webhook(data[0], data[1], infraction)
-
         data = request.get_json()
         user_id = data['userId']
-        if infraction == 1:
-            database.reduce_points(user_id, 10)
-        else:
-            database.reduce_points(user_id, 50)
+        database.reduce_points(user_id, 10)
+        # hook = database.get_webhook(id)
+
+        # if (hook is not None):
+        #     send_webhook(hook[0], hook[1], infraction)
+
+        # if infraction == 1:
+        #     database.reduce_points(user_id, 10)
+        # else:
+        #     database.reduce_points(user_id, 50)
 
         return make_response(jsonify(), 204)
     except:
@@ -219,8 +227,9 @@ Allow ping
 @sock.route("/ws")
 def ws(ws):
     while True:
-        data = ws.receive()
+        data = ws.receive() 
         ws.send(f"Echo from server: {data}")
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    database.init_database()
+    app.run(host=DATA_HOST, port=5001, debug=True)
