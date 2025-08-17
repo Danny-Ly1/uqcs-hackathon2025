@@ -186,16 +186,27 @@ def alert_discord(id):
         data = request.get_json()
         user_id = data['userId']
         database.reduce_points(user_id, 10)
-        # hook = database.get_webhook(id)
+        hook = database.get_webhook(id)
 
-        # if (hook is not None):
-        #     send_webhook(hook[0], hook[1], infraction)
+        if (hook is not None):
+            send_webhook(hook[0], hook[1], 1)
+        database.reduce_points(user_id, 10)
+        return make_response(jsonify(), 204)
+    except:
+        return make_response(jsonify({'message': 'Bad '}), 400)
+    
+# User snitching
+@app.route('/groups/<int:id>/infraction-big', methods=['POST'])
+def alert_discord(id):
+    try:
+        data = request.get_json()
+        user_id = data['userId']
+        database.reduce_points(user_id, 10)
+        hook = database.get_webhook(id)
 
-        # if infraction == 1:
-        #     database.reduce_points(user_id, 10)
-        # else:
-        #     database.reduce_points(user_id, 50)
-
+        if (hook is not None):
+            send_webhook(hook[0], hook[1], 2)
+        database.reduce_points(user_id, 50)
         return make_response(jsonify(), 204)
     except:
         return make_response(jsonify({'message': 'Bad '}), 400)
