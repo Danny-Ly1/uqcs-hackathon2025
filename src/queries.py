@@ -3,7 +3,7 @@ DATA_HOST = '10.89.76.206'
 # DATA_HOST = 'localhost'
 DATABASE = 'postgres'
 USER = 'postgres'
-PASSWORD = '1234' # Default password, must be the same when creating Postgres server
+PASSWORD = '1234' # This is the password for creating database servers
 PORT = '5432'
 
 GROUP_ID_INDEX = 3
@@ -42,7 +42,7 @@ INIT_USER_TABLE = """CREATE TABLE IF NOT EXISTS users (
                     groupid INT,
                     username VARCHAR(50) UNIQUE,
                     password VARCHAR(30),
-                    points INT DEFAULT 1000,
+                    points INT DEFAULT 100,
                     webhookurl TEXT
                     )
                     """
@@ -70,4 +70,3 @@ DROP_TABLE = """
             """
 
 HOOK = "https://discord.com/api/webhooks/1406113072531374241/g5Gd8iFqBFHBiDUy9e0sliUi6JJv4_XErx6emn451AuB_PjtnqZS2bs2cq3Ak6BCPMvf"
-
