@@ -8,6 +8,9 @@ export const SW_MESSAGE_TYPES = Object.freeze({
 
     // Notify the content script that the store/cache has changed
     CS_STORE_CHANGED: 1,
+
+    // Notify the SW that it should logout
+    SW_LOGOUT: 2,
 });
 
 export const API_ENDPOINT = 'http://10.89.76.206:5001';

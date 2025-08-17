@@ -11,7 +11,7 @@ import * as store from './js/lib/store.js';
 
 chrome.runtime.onStartup.addListener(() => 42 + 42);
 
-chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if(message.type === undefined) {
         return;
     }
@@ -20,6 +20,13 @@ chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
         case SW_MESSAGE_TYPES.SW_SET_UNLOCK_ALARM:
             const unlockEpochMs = (message.unlockTimeEpoch * 1000) + 150;
             chrome.alarms.create('unlock_alarm', {when: unlockEpochMs});
+            break;
+        case SW_MESSAGE_TYPES.SW_LOGOUT:
+            chrome.storage.local.clear().then(() => {
+                chrome.runtime.sendMessage({type: SW_MESSAGE_TYPES.CS_STORE_CHANGED});
+                sendResponse('Logged Out');
+            });
+            return true;
             break;
         default:
             throw new Error('unknown msg type')
@@ -104,6 +111,8 @@ const socketConnect = () => {
                     store.updateChromeBlocklist()
                 ]);
                 await chrome.runtime.sendMessage({type: SW_MESSAGE_TYPES.CS_STORE_CHANGED});
+            } else {
+                await Promise.all([store.updateChromeBlocklist(), store.updateLockInState()]);
             }
         } catch (_e) {
             // "error handling", you say? what's what?

@@ -160,16 +160,19 @@ const renderHomeScreen = async () => {
     powerButtonImg.src = lockInState.lockedIn ?
         "assets/Powerbutton-Green.png" : "assets/Powerbutton-Red.png";
 
+    // Hide some shiii when we are locked in
     if (lockInState.lockedIn) {
         startCountdown(lockInState.unlockTimeEpoch * 1000);
         makeInvisibleById('filterButtonDiv');
         makeInvisibleById('selectorDiv');
+        makeInvisibleById('logoutBtn');
 
         activeHomescreenPage = 'mainScreenContainer';
         navigateToHomescreenPage();
     } else {
         makeVisibleById('filterButtonDiv');
         makeVisibleById('selectorDiv');
+        makeVisibleById('logoutBtn');
     }
 
     // Render group ID
@@ -298,8 +301,10 @@ joinGroupBtn.addEventListener("click", async function (e) {
     }
 });
 
-// Populates Chrome blacklist with list from storage cache
-
+const logoutBtn = document.getElementById('logoutBtn');
+logoutBtn.addEventListener('mousedown', function (e) {
+    chrome.runtime.sendMessage({type: SW_MESSAGE_TYPES.SW_LOGOUT});
+})
 
 let countdownUpdateInterval = null;
 const startCountdown = (endEpochMs) => {
@@ -331,10 +336,6 @@ const startCountdown = (endEpochMs) => {
 
 // Run on popup open
 (async () => {
-    if ((await store.isInGroup()) && (await store.isLoggedIn)) {
-        await Promise.all([store.pullServerLockInState(), store.pullFilterList()]);
-    }
-
     // Render page elements and update Chrome ruleset
     await render();
     await store.updateChromeBlocklist();

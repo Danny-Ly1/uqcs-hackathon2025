@@ -281,6 +281,20 @@ export const lockIn = async (lockInDurationSec) => {
 // Returns true, when current time is beyond unlock time
 export const updateLockInState = async () => {
     await refreshCache();
+    if (!cache.lockInState.unlockTimeEpoch ) {
+        await chrome.action.setIcon({
+            path: {
+                "16": "assets/icon/gray/16.png",
+                "48": "assets/icon/gray/48.png",
+                "128": "assets/icon/gray/128.png" 
+            }
+        });
+
+        cache.lockInState.lockedIn = false;
+        await chrome.storage.local.set(cache);
+
+        return true;
+    }
 
     const epochSec = Date.now() / 1000;
     if ((cache.lockInState.unlockTimeEpoch - epochSec) <= 0) {
