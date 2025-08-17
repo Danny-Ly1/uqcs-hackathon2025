@@ -76,6 +76,13 @@ Delete URL from db
 def clear_one_url(link_id: int) -> None:
     execute_command(DELETE_URL_COMMAND, (link_id,), False)
 
+"""
+Search for url duplicates under same group id
+"""
+def url_duplicate_yes(group_id: int, url: str) -> list[tuple]:
+    result = execute_command(CHECK_VALID_URL, (url, group_id), True)
+    return result
+
 
 """
 Reduces points of user
@@ -96,6 +103,10 @@ Updates the groupID for the user
 """
 def updateGroupID(user_id: int, group_id: int) -> list[tuple]:
     results = execute_command(UPDATE_GROUPID_COMMAND, (group_id, user_id), True)
+    return results
+
+def group_exists(group_id: int):
+    results = execute_command(CHECK_GROUP_ID, (group_id, ), True)
     return results
 
 """
@@ -123,7 +134,12 @@ def check_login(username: str, password: str):
 Adds a new group to the db
 """
 def add_group() -> list[tuple]:
-    results = execute_command(ADD_GROUP_COMMAND, ([],), True)
+    # with connect_database() as conn:
+    #     with conn.cursor() as cursor:
+    #         cursor.execute(ADD_GROUP_COMMAND)
+    #         results = cursor.fetchone()
+    # print(results)
+    results = execute_command(ADD_GROUP_COMMAND, None, True)
     return results
 
 """
@@ -192,6 +208,7 @@ def init_database() -> None:
     execute_command(INIT_USER_TABLE, None, False)
     execute_command(INIT_GROUP_TABLE, None, False)
     execute_command(INIT_FILTER_TABLE, None, False)
+
 
 """
 Clears the database
