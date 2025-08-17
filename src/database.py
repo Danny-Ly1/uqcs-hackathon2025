@@ -21,8 +21,8 @@ def execute_command(query: str, args: tuple[str], returning: bool) -> list[tuple
                 cursor.execute(query, args)
                 if returning:
                     results = cursor.fetchone()
-                    if results == None:
-                        raise Exception("SOMETHING WENT 5 BIG BOOMS")
+                    # if results == None:
+                    #     raise Exception("SOMETHING WENT 5 BIG BOOMS")
                     return results
                 conn.commit()
         except psycopg2.ProgrammingError as e:
@@ -76,6 +76,13 @@ Delete URL from db
 def clear_one_url(link_id: int) -> None:
     execute_command(DELETE_URL_COMMAND, (link_id,), False)
 
+"""
+Search for url duplicates under same group id
+"""
+def url_duplicate_yes(group_id: int, url: str) -> list[tuple]:
+    result = execute_command(CHECK_VALID_URL, (group_id, url), True)
+    return result[0]
+
 
 """
 Reduces points of user
@@ -97,6 +104,10 @@ Updates the groupID for the user
 def updateGroupID(user_id: int, group_id: int) -> list[tuple]:
     results = execute_command(UPDATE_GROUPID_COMMAND, (group_id, user_id), True)
     return results
+
+def group_exists(group_id: int):
+    results = execute_command(CHECK_GROUP_ID, (group_id, ), True)
+    return results[0]
 
 """
 Adds a user to the database
@@ -123,7 +134,12 @@ def check_login(username: str, password: str):
 Adds a new group to the db
 """
 def add_group() -> list[tuple]:
-    results = execute_command(ADD_GROUP_COMMAND, ([],), True)
+    # with connect_database() as conn:
+    #     with conn.cursor() as cursor:
+    #         cursor.execute(ADD_GROUP_COMMAND)
+    #         results = cursor.fetchone()
+    # print(results)
+    results = execute_command(ADD_GROUP_COMMAND, None, True)
     return results
 
 """
