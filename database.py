@@ -21,8 +21,8 @@ def execute_command(query: str, args: tuple[str], returning: bool) -> list[tuple
                 cursor.execute(query, args)
                 if returning:
                     results = cursor.fetchone()
-                    if results == None:
-                        raise Exception("SOMETHING WENT 5 BIG BOOMS")
+                    # if results == None:
+                    #     raise Exception("SOMETHING WENT 5 BIG BOOMS")
                     return results
                 conn.commit()
         except psycopg2.ProgrammingError as e:
@@ -80,8 +80,8 @@ def clear_one_url(link_id: int) -> None:
 Search for url duplicates under same group id
 """
 def url_duplicate_yes(group_id: int, url: str) -> list[tuple]:
-    result = execute_command(CHECK_VALID_URL, (url, group_id), True)
-    return result
+    result = execute_command(CHECK_VALID_URL, (group_id, url), True)
+    return result[0]
 
 
 """
@@ -107,7 +107,7 @@ def updateGroupID(user_id: int, group_id: int) -> list[tuple]:
 
 def group_exists(group_id: int):
     results = execute_command(CHECK_GROUP_ID, (group_id, ), True)
-    return results
+    return results[0]
 
 """
 Adds a user to the database
