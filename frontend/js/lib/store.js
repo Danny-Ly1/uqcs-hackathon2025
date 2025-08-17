@@ -105,6 +105,14 @@ export const attemptLoginOrRegister = async (username, password, register) => {
         await chrome.storage.local.set(cache);
     }
 
+    if ((await isInGroup()) && (await isLoggedIn())) {
+        try {
+            await Promise.all([pullServerLockInState(), pullFilterList()]);
+        } catch (err) {
+            // balls
+        }
+    }
+
     return true;
 }
 
