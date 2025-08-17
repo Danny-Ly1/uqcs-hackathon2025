@@ -75,7 +75,7 @@ Keep the port as 5432, and enter password 1234.
 > FILEPATH: src/queries.py
 > PASSWORD: YOURPASSWORD (default: '1234')
 ![alt text](image-2.png)
-
+After this, run the server.py file and it should be working
 
 ### <a name="library-install">Library Installation:</a>
 The following libraries are required to run the server:
