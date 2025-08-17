@@ -18,7 +18,7 @@ export const refreshCache = async () => {
 
         cache.filterList = [];
         cache.lockInState = {lockedIn: false, unlockTimeEpoch: 0};
-        cache.user = {id: null, username: null, groupId: null};
+        cache.user = {id: null, username: null, groupId: null, points: null};
 
         await chrome.storage.local.set(cache);
 
@@ -62,6 +62,14 @@ export const getUserId = async () => {
     return cache.user.id;
 }
 
+// Returns stored user points, may be null
+export const getUserPoints = async () => {
+    await refreshCache();
+
+    return cache.user.points;
+}
+
+
 // Send credentials to server, update store and returns true if successful, returns false otherwise
 export const attemptLoginOrRegister = async (username, password, register) => {
     await refreshCache();
@@ -91,19 +99,7 @@ export const attemptLoginOrRegister = async (username, password, register) => {
         return false;
     }
 
-    let groupResp;
-    try {
-        groupResp = await fetch(`${API_ENDPOINT}/users/${cache.user.id}`, {
-            method: 'GET'
-        });
-    } catch (err) {
-        console.log("Request error occurred:", err);
-    }
-    if (groupResp?.ok) {
-        groupResp = await groupResp.json();
-        cache.user.groupId = groupResp.groupId;
-        await chrome.storage.local.set(cache);
-    }
+    await pullUserData();
 
     if ((await isInGroup()) && (await isLoggedIn())) {
         try {
@@ -114,6 +110,28 @@ export const attemptLoginOrRegister = async (username, password, register) => {
     }
 
     return true;
+}
+
+export const pullUserData = async () => {
+    let userResp;
+    try {
+        userResp = await fetch(`${API_ENDPOINT}/users/${cache.user.id}`, {
+            method: 'GET'
+        });
+    } catch (err) {
+        console.log("User error occurred:", err);
+    }
+    if (userResp?.ok) {
+        userResp = await userResp.json();
+        cache.user.points = userResp.points;
+        cache.user.groupId = userResp.groupId;
+        cache.user.username = userResp.username;
+        await chrome.storage.local.set(cache);
+
+        return true;
+    }
+
+    return false;
 }
 
 // Attempt to create new group with user ID on server, returns false if failed, true if successful

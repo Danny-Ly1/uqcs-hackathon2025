@@ -108,6 +108,7 @@ const socketConnect = () => {
             if ((await store.isInGroup()) && (await store.isLoggedIn)) {
                 await Promise.all([store.pullServerLockInState(),
                     store.pullFilterList(),
+                    store.pullUserData(),
                     store.updateChromeBlocklist()
                 ]);
                 await chrome.runtime.sendMessage({type: SW_MESSAGE_TYPES.CS_STORE_CHANGED});

@@ -20,6 +20,7 @@ const groupIdInputTextbox = document.getElementById("groupIdInput");
 const joinGroupBtn = document.getElementById('joinGroupBtn');
 const newGroupBtn = document.getElementById('newGroupBtn');
 
+const pointsDisplay = document.getElementById('pointsDisplay');
 const timerElement = document.getElementById('timer');
 const pomodoroSelector = document.getElementById('pomodoroSelectorSeconds');
 const groupIdText = document.getElementById('groupIdText');
@@ -175,7 +176,8 @@ const renderHomeScreen = async () => {
         makeVisibleById('logoutBtn');
     }
 
-    // Render group ID
+    // Render group ID and point count
+    pointsDisplay.textContent = `Points: ${(await store.getUserPoints())}`
     groupIdText.textContent = `Group ID: ${(await store.getGroupId())}`
 }
 
