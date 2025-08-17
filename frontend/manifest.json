@@ -1,6 +1,6 @@
 {
   "name": "SquadLock",
-  "description": "Anti-goon++",
+  "description": "Productivity extension to prevent distractions",
   "version": "1.0",
   "manifest_version": 3,
   "icons": {
