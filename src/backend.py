@@ -75,11 +75,14 @@ def get_user(id):
 @app.route('/users/<int:id>/group', methods=['POST'])
 def update_usergroup(id):
     """
-    Update a user's groupId
+    Update a user's groupId aka joining a group
     """
     try:
         data = request.get_json()
         groupID = int(data['groupId'])
+        exist = database.group_exists(groupID)
+        if (exist == 0):
+            return make_response(jsonify({'message': 'Group id does not exist'}), 400)
         # should already know groupid
         (dummyGroupID) = database.updateGroupID(id, groupID)
         return make_response(jsonify({'groupId': groupID}), 200)
@@ -137,9 +140,13 @@ def create_group_rule(id):
     try:
         data = request.get_json()
         url = data['url']
+        duplicate = database.url_duplicate_yes(id, url)
+        
+        if (duplicate > 1):
+            return make_response(jsonify({'message': 'Duplicate found'}), 400)
+        
         results = database.add_blocked_url(url, id)
         url, linkid = results
-        print(url, linkid[0])
         return make_response(jsonify({'id': linkid[0], 'url': url}), 200)
     except:
         return make_response(jsonify({'message': 'Error adding a rule to filter list'}), 400)
@@ -155,8 +162,8 @@ def remove_group_rule(id, ruleId):
 
 
 #Sends JSON to discord
-def send_webhook(user: str, hook: str, infraction: int):
-    webhook = DiscordWebhook(url=hook)      
+def send_webhook(user: str, infraction: int):
+    webhook = DiscordWebhook(url=HOOK)      
     if infraction == 1:
         embed = DiscordEmbed(title="Blocked Site Access Attempt",
         description= f"{user} went on a blocked website and lost 10 points. LOCK IN!",
@@ -176,18 +183,34 @@ def send_webhook(user: str, hook: str, infraction: int):
 
 # User snitching
 @app.route('/groups/<int:id>/infraction', methods=['POST'])
-def alert_discord(id, infraction):
+def alert_discord(id):
     try:
-        data = database.get_webhook(id)
-        send_webhook(data[0], data[1], infraction)
-
         data = request.get_json()
-        user_id = data['userId']
-        if infraction == 1:
-            database.reduce_points(user_id, 10)
-        else:
-            database.reduce_points(user_id, 50)
+        user_id = data['userID']
+        hook = database.get_webhook(user_id)
 
+        # if (hook is not None):
+        #     send_webhook(hook[0], hook[1], 1) # later
+    
+        send_webhook(hook[0], 1)
+        database.reduce_points(user_id, 10)
+        return make_response(jsonify(), 204)
+    except:
+        return make_response(jsonify({'message': 'Bad '}), 400)
+    
+# User snitching
+@app.route('/groups/<int:id>/infraction-big', methods=['POST'])
+def alert_discord_big(id):
+    try:
+        data = request.get_json()
+        user_id = data['userID']
+        hook = database.get_webhook(user_id)
+
+        # if (hook is not None):
+        #     send_webhook(hook[0], hook[1], 1) # later
+    
+        send_webhook(hook[0], 2)
+        database.reduce_points(50, user_id)
         return make_response(jsonify(), 204)
     except:
         return make_response(jsonify({'message': 'Bad '}), 400)
@@ -198,7 +221,7 @@ def gain_points(id):
     try:
         data = request.get_json()
         user_id = data['userID']
-        database.reduce_points(user_id, -50)
+        database.reduce_points(-50, user_id)
         return make_response(jsonify(), 204)
     except:
         return make_response(jsonify({'message': 'Bad '}), 400)
