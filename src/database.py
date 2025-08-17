@@ -42,26 +42,6 @@ def connect_database():
     )
     return conn
 
-
-"""
-Trims url down to domain name. Supports com, org, net
-"""
-# def url_trimmer(url: str) -> str:
-#     com_index = url.find(".com")
-#     org_index = url.find(".org")
-#     net_index = url.find(".net")
-#     www_index = url.find("www.") + 4 # Move past www
-#     if com_index:
-#         url = url[www_index:com_index]
-#     elif org_index:
-#         url = url[www_index:org_index]
-#     elif net_index:
-#         url = url[www_index:net_index]
-#     else: 
-#       return ""
-#     return url
-
-
 """
 Add new blocked url
 """
@@ -134,11 +114,6 @@ def check_login(username: str, password: str):
 Adds a new group to the db
 """
 def add_group() -> list[tuple]:
-    # with connect_database() as conn:
-    #     with conn.cursor() as cursor:
-    #         cursor.execute(ADD_GROUP_COMMAND)
-    #         results = cursor.fetchone()
-    # print(results)
     results = execute_command(ADD_GROUP_COMMAND, None, True)
     return results
 
